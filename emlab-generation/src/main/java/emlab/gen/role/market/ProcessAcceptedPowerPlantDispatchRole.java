@@ -28,22 +28,25 @@ import emlab.gen.domain.market.electricity.SegmentClearingPoint;
 import emlab.gen.repository.Reps;
 
 @RoleComponent
-public class ProcessAcceptedPowerPlantDispatchRole extends AbstractMarketRole<ElectricitySpotMarket> implements Role<ElectricitySpotMarket> {
+public class ProcessAcceptedPowerPlantDispatchRole extends AbstractMarketRole<ElectricitySpotMarket> implements
+        Role<ElectricitySpotMarket> {
 
     @Autowired
     Reps reps;
 
+    @Override
     @Transactional
     public void act(ElectricitySpotMarket esm) {
 
         for (Segment segment : reps.segmentRepository.findAll()) {
-            SegmentClearingPoint scp = reps.segmentClearingPointRepository.findOneSegmentClearingPointForMarketSegmentAndTime(
-                    getCurrentTick(), segment, esm);
+            SegmentClearingPoint scp = reps.segmentClearingPointRepository
+                    .findOneSegmentClearingPointForMarketSegmentAndTime(getCurrentTick(), segment, esm);
             for (PowerPlantDispatchPlan plan : reps.powerPlantDispatchPlanRepository
                     .findAllAcceptedPowerPlantDispatchPlansForMarketSegmentAndTime(esm, segment, getCurrentTick())) {
 
-                reps.nonTransactionalCreateRepository.createCashFlow(esm, plan.getBidder(), plan.getAcceptedAmount() * scp.getPrice()
-                        * segment.getLengthInHours(), CashFlow.ELECTRICITY_SPOT, getCurrentTick(), plan.getPowerPlant());
+                reps.nonTransactionalCreateRepository.createCashFlow(esm, plan.getBidder(), plan.getAcceptedAmount()
+                        * scp.getPrice() * segment.getLengthInHours(), CashFlow.ELECTRICITY_SPOT, getCurrentTick(),
+                        plan.getPowerPlant());
             }
 
         }
@@ -52,7 +55,9 @@ public class ProcessAcceptedPowerPlantDispatchRole extends AbstractMarketRole<El
 
     @Override
     public Reps getReps() {
+
         return reps;
+
     }
 
 }

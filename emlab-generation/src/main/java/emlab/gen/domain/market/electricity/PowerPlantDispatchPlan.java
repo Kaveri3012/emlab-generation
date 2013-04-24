@@ -26,11 +26,16 @@ import emlab.gen.domain.market.Bid;
 import emlab.gen.domain.technology.PowerPlant;
 
 /**
- * The power plant dispatch plan is an extension to the bid, and takes into account information that is necessary for the fulfillment of longt-term contracts and the dispatch of specific power plants.
- * However, the function of it for a pure spot market clearing is identical to a normal bid.
+ * The power plant dispatch plan is an extension to the bid, and takes into
+ * account information that is necessary for the fulfillment of long-term
+ * contracts and the dispatch of specific power plants. However, the function of
+ * it for a pure spot market clearing is identical to a normal bid.
  * 
- * The Electricity Long Term Bid is the reflecting commitment to meet long term contracts. Before being able to make a(n updated) valid bid on the spot market, we need to define what part of capacity
- * of a certain power plant in a certain segment is covered by long-term contracts. This needs to be updated every iteration in the market clearing algorithm.
+ * The Electricity Long Term Bid is the reflecting commitment to meet long term
+ * contracts. Before being able to make a(n updated) valid bid on the spot
+ * market, we need to define what part of capacity of a certain power plant in a
+ * certain segment is covered by long-term contracts. This needs to be updated
+ * every iteration in the market clearing algorithm.
  * 
  * @author ejlchappin
  * @author jcrichstein
@@ -46,35 +51,38 @@ public class PowerPlantDispatchPlan extends Bid {
     private PowerPlant powerPlant;
 
     /**
-     * Is set to always true, since it the power plant dispatch plan is only for supply bids to the spot market.
+     * Is set to always true, since it the power plant dispatch plan is only for
+     * supply bids to the spot market.
      */
     private final boolean supplyBid = true;
 
     private double capacityLongTermContract;
     /**
-     * IMPORTANT: Amount (capacity in MW) that is bid on to the SPOT MARKET, without long term contracts.
+     * IMPORTANT: Amount (capacity in MW) that is bid on to the SPOT MARKET,
+     * without long term contracts.
      */
-	// private double amount;
+    // private double amount;
     /**
-     * In the case of the power plant dispatch plan: Marginal cost excluding CO2.
+     * In the case of the power plant dispatch plan: Marginal cost excluding
+     * CO2.
      */
-	// private double price;
+    // private double price;
     private double bidWithoutCO2;
 
-	// private long time;
-    
-    @Indexed(indexName = "ppdpTime") 
+    // private long time;
+
+    @Indexed(indexName = "ppdpTime")
     private int ppdpTime;
 
     public int getPpdpTime() {
-		return ppdpTime;
-	}
+        return ppdpTime;
+    }
 
-	public void setPpdpTime(int ppdpTime) {
-		this.ppdpTime = ppdpTime;
-	}
+    public void setPpdpTime(int ppdpTime) {
+        this.ppdpTime = ppdpTime;
+    }
 
-	public Segment getSegment() {
+    public Segment getSegment() {
         return segment;
     }
 
@@ -98,19 +106,20 @@ public class PowerPlantDispatchPlan extends Bid {
         this.capacityLongTermContract = capacityLongTermContract;
     }
 
-	// public long getTime() {
-	// return time;
-	// }
-	//
-	// public void setTime(long time) {
-	// this.time = time;
-	// this.ppdpTime = (int) time;
-	// }
+    // public long getTime() {
+    // return time;
+    // }
+    //
+    // public void setTime(long time) {
+    // this.time = time;
+    // this.ppdpTime = (int) time;
+    // }
 
     @Override
     public String toString() {
-        return "for " + getBidder() + " power plant: " + getPowerPlant() + " in segment " + segment + " plans to sell long term: "
-                + getCapacityLongTermContract() + " plans to sell capacity spot: " + getAmount();
+        return "for " + getBidder() + " power plant: " + getPowerPlant() + " in segment " + segment
+                + " plans to sell long term: " + getCapacityLongTermContract() + " plans to sell capacity spot: "
+                + getAmount();
     }
 
     public double getBidWithoutCO2() {
@@ -121,12 +130,14 @@ public class PowerPlantDispatchPlan extends Bid {
         this.bidWithoutCO2 = bidWithoutCO2;
     }
 
+    @Override
     public boolean isSupplyBid() {
         return supplyBid;
     }
 
-    public void specifyNotPersist(PowerPlant plant, EnergyProducer producer, ElectricitySpotMarket market, Segment segment, long time,
-            double price, double bidWithoutCO2, double spotMarketCapacity, double longTermContractCapacity, int status) {
+    public void specifyNotPersist(PowerPlant plant, EnergyProducer producer, ElectricitySpotMarket market,
+            Segment segment, long time, double price, double bidWithoutCO2, double spotMarketCapacity,
+            double longTermContractCapacity, int status) {
         this.setPowerPlant(plant);
         this.setSegment(segment);
         this.setTime(time);
@@ -141,11 +152,12 @@ public class PowerPlantDispatchPlan extends Bid {
 
     // All transactional methods below are signified by starting with update
     @Transactional
-    public void specifyAndPersist(PowerPlant plant, EnergyProducer producer, ElectricitySpotMarket market, Segment segment, long time,
-            double price, double bidWithoutCO2, double spotMarketCapacity, double longTermContractCapacity, int status) {
+    public void specifyAndPersist(PowerPlant plant, EnergyProducer producer, ElectricitySpotMarket market,
+            Segment segment, long time, double price, double bidWithoutCO2, double spotMarketCapacity,
+            double longTermContractCapacity, int status) {
         this.persist();
-        this.specifyNotPersist(plant, producer, market, segment, time, price, bidWithoutCO2, spotMarketCapacity, longTermContractCapacity,
-                status);
+        this.specifyNotPersist(plant, producer, market, segment, time, price, bidWithoutCO2, spotMarketCapacity,
+                longTermContractCapacity, status);
 
     }
 

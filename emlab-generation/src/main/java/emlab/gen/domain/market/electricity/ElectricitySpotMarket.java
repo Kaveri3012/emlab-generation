@@ -30,8 +30,8 @@ public class ElectricitySpotMarket extends DecarbonizationMarket {
     @RelatedTo(type = "SEGMENT_LOAD", elementClass = SegmentLoad.class, direction = Direction.OUTGOING)
     private Set<SegmentLoad> loadDurationCurve;
 
-	@RelatedTo(type = "DEMANDGROWTH_TREND", elementClass = TimeSeriesImpl.class, direction = Direction.OUTGOING)
-	private TimeSeriesImpl demandGrowthTrend;
+    @RelatedTo(type = "DEMANDGROWTH_TREND", elementClass = TimeSeriesImpl.class, direction = Direction.OUTGOING)
+    private TimeSeriesImpl demandGrowthTrend;
 
     private double valueOfLostLoad;
 
@@ -51,11 +51,11 @@ public class ElectricitySpotMarket extends DecarbonizationMarket {
         this.valueOfLostLoad = valueOfLostLoad;
     }
 
-	public TimeSeriesImpl getDemandGrowthTrend() {
+    public TimeSeriesImpl getDemandGrowthTrend() {
         return demandGrowthTrend;
     }
 
-	public void setDemandGrowthTrend(TimeSeriesImpl demandGrowthTrend) {
+    public void setDemandGrowthTrend(TimeSeriesImpl demandGrowthTrend) {
         this.demandGrowthTrend = demandGrowthTrend;
     }
 
