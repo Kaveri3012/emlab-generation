@@ -15,8 +15,6 @@
  ******************************************************************************/
 package emlab.gen.domain.market.capacity;
 
-import java.util.Set;
-
 import org.neo4j.graphdb.Direction;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
@@ -24,7 +22,6 @@ import org.springframework.data.neo4j.annotation.RelatedTo;
 import emlab.gen.domain.agent.EnergyConsumer;
 import emlab.gen.domain.agent.Regulator;
 import emlab.gen.domain.market.DecarbonizationMarket;
-import emlab.gen.domain.market.electricity.SegmentLoad;
 
 /**
  * @author Kaveri
@@ -36,9 +33,6 @@ public class CapacityMarket extends DecarbonizationMarket {
     @RelatedTo(type = "WITH_REGULATOR", elementClass = Regulator.class, direction = Direction.OUTGOING)
     private Regulator regulator;
 
-    @RelatedTo(type = "SEGMENT_LOAD", elementClass = SegmentLoad.class, direction = Direction.OUTGOING)
-    private Set<SegmentLoad> loadDurationCurve;
-
     @RelatedTo(type = "WITH_CONSUMER", elementClass = EnergyConsumer.class, direction = Direction.OUTGOING)
     private EnergyConsumer consumer;
 
@@ -48,14 +42,6 @@ public class CapacityMarket extends DecarbonizationMarket {
 
     public void setConsumer(EnergyConsumer consumer) {
         this.consumer = consumer;
-    }
-
-    public Set<SegmentLoad> getLoadDurationCurve() {
-        return loadDurationCurve;
-    }
-
-    public void setLoadDurationCurve(Set<SegmentLoad> loadDurationCurve) {
-        this.loadDurationCurve = loadDurationCurve;
     }
 
     public Regulator getRegulator() {

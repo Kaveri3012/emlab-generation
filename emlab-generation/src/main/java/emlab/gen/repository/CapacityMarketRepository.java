@@ -17,6 +17,7 @@ package emlab.gen.repository;
 
 import org.springframework.data.neo4j.annotation.Query;
 import org.springframework.data.neo4j.annotation.QueryType;
+import org.springframework.data.neo4j.repository.GraphRepository;
 import org.springframework.data.repository.query.Param;
 
 import emlab.gen.domain.agent.Regulator;
@@ -29,7 +30,7 @@ import emlab.gen.domain.market.capacity.CapacityMarket;
  * @author Kaveri
  * 
  */
-public class CapacityMarketRepository {
+public interface CapacityMarketRepository extends GraphRepository<CapacityMarket> {
 
     @Query(value = "g.v(zone).in('ZONE').filter{it.__type__=='emlab.gen.domain.market.capacity.CapacityMarket'}.next()", type = QueryType.Gremlin)
     public CapacityMarket findCapacityMarketForZone(@Param("zone") Zone zone);
@@ -46,9 +47,9 @@ public class CapacityMarketRepository {
             @Param("market") CapacityMarket capacityMarket);
 
     @Query(value = "g.v(zone).in('CAPACITY_MARKET')", type = QueryType.Gremlin)
-    public CapacityMarket findCapacityMarketforZone(@Param("zone") Zone zone);
+    public CapacityMarket findCapacityMarketForZoneBackup(@Param("zone") Zone zone);
 
     @Query(value = "g.v(zone).in('REGULATOR')", type = QueryType.Gremlin)
-    public Regulator findRegulatorforZone(@Param("zone") Zone zone);
+    public Regulator findRegulatorForZone(@Param("zone") Zone zone);
 
 }

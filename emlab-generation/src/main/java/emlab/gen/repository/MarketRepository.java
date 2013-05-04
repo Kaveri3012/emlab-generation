@@ -76,14 +76,16 @@ public interface MarketRepository extends GraphRepository<DecarbonizationMarket>
     public ElectricitySpotMarket findElectricitySpotMarketForZone(@Param("zone") Zone zone);
 
     @Query(value = "START nationalG = node({nationalG}), electricityMarket = node:__types__(\"className:emlab.gen.domain.market.electricity.ElectricitySpotMarket\") MATCH (nationalG)-[:GOVERNED_ZONE]->(zone)<-[:ZONE]-(electricityMarket) RETURN electricityMarket")
-    public ElectricitySpotMarket findElectricitySpotMarketByNationalGovernment(@Param("nationalG") NationalGovernment nationalG);
+    public ElectricitySpotMarket findElectricitySpotMarketByNationalGovernment(
+            @Param("nationalG") NationalGovernment nationalG);
 
     @Query(value = "g.v(plant).out('LOCATION').out('REGION').in('ZONE').filter{it.__type__=='emlab.gen.domain.market.electricity.ElectricitySpotMarket'}.next()", type = QueryType.Gremlin)
     public ElectricitySpotMarket findElectricitySpotMarketByPowerPlant(@Param("plant") PowerPlant plant);
 
     @Query(value = "segID = g.v(segment).segmentID;"
             + "return g.v(zone).in('ZONE').filter{it.__type__=='emlab.gen.domain.market.electricity.ElectricitySpotMarket'}.out('SEGMENT_LOAD').as('SL').out('SEGMENTLOAD_SEGMENT').filter{it.segmentID==segID}.back('SL').next();", type = QueryType.Gremlin)
-    public SegmentLoad findSegmentLoadForElectricitySpotMarketForZone(@Param("zone") Zone zone, @Param("segment") Segment segment);
+    public SegmentLoad findSegmentLoadForElectricitySpotMarketForZone(@Param("zone") Zone zone,
+            @Param("segment") Segment segment);
 
     /**
      * Gives the market for a specific substance

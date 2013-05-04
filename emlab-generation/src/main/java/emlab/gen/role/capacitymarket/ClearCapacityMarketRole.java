@@ -38,9 +38,9 @@ public class ClearCapacityMarketRole extends AbstractRole<Regulator> implements 
 
         Iterable<CapacityDispatchPlan> sortedListofCDP = capacityMarketRepository
                 .findAllSortedCapacityDispatchPlansByPrice(getCurrentTick());
-        double demand;
-        double sumofSupplyBidsAccepted = 0;
-        double acceptedPrice = 0;
+        double demand = 0d;
+        double sumofSupplyBidsAccepted = 0d;
+        double acceptedPrice = 0d;
         boolean isTheMarketCleared = false;
 
         // This epsilon is to account for rounding errors for java (only
@@ -59,7 +59,7 @@ public class ClearCapacityMarketRole extends AbstractRole<Regulator> implements 
                 demand = regulator.getDemandTarget()
                         * (1 - regulator.getReserveDemandLowerMargin())
                         + ((regulator.getCapacityMarketPriceCap() - currentCDP.getPrice())
-                                * (regulator.getReserveDemandUpperMargin() - regulator.getReserveDemandLowerMargin()) * regulator
+                                * (regulator.getReserveDemandUpperMargin() + regulator.getReserveDemandLowerMargin()) * regulator
                                     .getDemandTarget()) / regulator.getCapacityMarketPriceCap();
 
                 if (isTheMarketCleared == false) {

@@ -23,6 +23,7 @@ import emlab.gen.domain.agent.EnergyProducer;
 import emlab.gen.domain.market.Bid;
 import emlab.gen.domain.market.capacity.CapacityDispatchPlan;
 import emlab.gen.domain.market.capacity.CapacityMarket;
+import emlab.gen.domain.market.electricity.ElectricitySpotMarket;
 import emlab.gen.domain.market.electricity.SegmentLoad;
 import emlab.gen.domain.technology.PowerPlant;
 import emlab.gen.repository.Reps;
@@ -47,32 +48,54 @@ public class SubmitCapacityBidToMarketRole extends AbstractEnergyProducerRole im
             CapacityMarket market = reps.capacityMarketRepository.findCapacityMarketForZone(plant.getLocation()
                     .getZone());
 
-            double price = plant.getTechnology().getFixedOperatingCost(getCurrentTick());
-            logger.info("Submitting offers for {} with technology {}", plant.getName(), plant.getTechnology().getName());
+            ElectricitySpotMarket eMarket = reps.marketRepository.findElectricitySpotMarketForZone(plant.getLocation()
+                    .getZone());
 
-            // if price is > price cap, be a price taker and submit at 0 price
-            double priceCap = market.getRegulator().getCapacityMarketPriceCap();
-            if (price > priceCap)
-                price = 0;
+            // compute bid price as (fixedOMCost - elecricityMarketRevenue), if
+            // the difference is positive. Else if negative, bid at zero.
+            double bidPrice = 0d;
 
-            double peakLoadSegment = 0;
-            for (SegmentLoad segmentload : market.getLoadDurationCurve()) {
+            // get FixedOMCost
+            double fixedOnMCost = plant.getTechnology().getFixedOperatingCost(getCurrentTick());
 
-                if (segmentload.getBaseLoad() > peakLoadSegment)
-                    peakLoadSegment = segmentload.getBaseLoad();
+            // compute revenue from the energy market, using previous tick's
+            // electricity spot market prices
+            long numberOfSegments = reps.segmentRepository.count();
+            double electricityMarketRevenue = 0d;
+            double runningHours = 0d;
+            // double mc = calculateMarginalCostExclCO2MarketCost(plant);
+            double mc = 100d;
+            for (SegmentLoad segmentLoad : eMarket.getLoadDurationCurve()) {
 
+                double expectedElectricityPrice = reps.clearingPointRepository.findClearingPointForMarketAndTime(
+                        eMarket, getCurrentTick() - 1).getPrice();
+                double hours = segmentLoad.getSegment().getLengthInHours();
+                if (mc <= expectedElectricityPrice) {
+                    runningHours += hours;
+                    electricityMarketRevenue += (expectedElectricityPrice - mc) * hours
+                            * plant.getAvailableCapacity(getCurrentTick(), segmentLoad.getSegment(), numberOfSegments);
+                }
             }
 
-            long numberOfSegments = reps.segmentRepository.count();
+            double mcCapacity = fixedOnMCost - electricityMarketRevenue;
+
+            if (mcCapacity < 0) {
+                bidPrice = 0d;
+            } else if (mcCapacity < fixedOnMCost)
+                bidPrice = mcCapacity;
+            else
+                bidPrice = fixedOnMCost;
+
+            logger.info("Submitting offers for {} with technology {}", plant.getName(), plant.getTechnology().getName());
 
             double capacity = plant.getAvailableCapacity(getCurrentTick(), null, numberOfSegments);
-            logger.info("I bid capacity: {} and price: {} into the capacity market", capacity, price);
+            logger.info("I bid capacity: {} and price: {} into the capacity market", capacity, bidPrice);
 
             CapacityDispatchPlan plan = new CapacityDispatchPlan().persist();
             // plan.specifyNotPersist(plant, producer, market, segment,
             // time, price, bidWithoutCO2, spotMarketCapacity,
             // longTermContractCapacity, status);
-            plan.specifyAndPersist(plant, producer, market, getCurrentTick(), price, capacity, Bid.SUBMITTED);
+            plan.specifyAndPersist(plant, producer, market, getCurrentTick(), bidPrice, capacity, Bid.SUBMITTED);
 
             logger.info("Submitted {} for iteration {} to capacity market", plan);
 

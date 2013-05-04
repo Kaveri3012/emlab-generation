@@ -15,60 +15,74 @@
  ******************************************************************************/
 package emlab.gen.role.capacitymarket;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.springframework.data.neo4j.annotation.NodeEntity;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 import agentspring.role.AbstractRole;
 import agentspring.role.Role;
+import agentspring.role.RoleComponent;
 import emlab.gen.domain.agent.Regulator;
+import emlab.gen.domain.gis.Zone;
 import emlab.gen.domain.market.electricity.ElectricitySpotMarket;
 import emlab.gen.repository.Reps;
-import emlab.gen.util.GeometricTrendRegression;
 
 /**
  * @author Kaveri
  * 
  */
-@NodeEntity
+@RoleComponent
 public class ForecastDemandRole extends AbstractRole<Regulator> implements Role<Regulator> {
 
+    @Autowired
     Reps reps;
 
     @Override
+    @Transactional
     public void act(Regulator regulator) {
+        // long capabilityYear = 0;
+        // capabilityYear = getCurrentTick() + regulator.getTargetPeriod();
 
-        long capabilityYear = getCurrentTick() + regulator.getTargetPeriod();
-
-        // Computing Demand (the current year's demand is not considered for the
-        // regression, as it is forecasted.
-        Map<ElectricitySpotMarket, Double> expectedDemand = new HashMap<ElectricitySpotMarket, Double>();
-
-        for (ElectricitySpotMarket elm : reps.template.findAll(ElectricitySpotMarket.class)) {
-            GeometricTrendRegression gtr = new GeometricTrendRegression();
-            for (long time = getCurrentTick() - 1; time > getCurrentTick() - 1
-                    - regulator.getNumberOfYearsLookingBackToForecastDemand()
-                    && time >= 0; time = time - 1) {
-                gtr.addData(time, elm.getDemandGrowthTrend().getValue(time));
-            }
-            expectedDemand.put(elm, gtr.predict(capabilityYear));
-        }
-        // Calculate peak demand across all markets
-        double peakExpectedDemand = (Collections.max(expectedDemand.values()));
-
-        // Compute demand target by multiplying reserve margin
-        double demandTarget = peakExpectedDemand * (1 + regulator.getReserveMargin());
+        Zone zone = regulator.getZone();
+        ElectricitySpotMarket market = reps.marketRepository.findElectricitySpotMarketForZone(zone);
+        double peakLoadforMarketNOtrend = reps.segmentLoadRepository.peakLoadbyZoneMarketandTime(zone, market);
+        double trend = market.getDemandGrowthTrend().getValue(getCurrentTick());
+        double peakLoadforMarket = trend * peakLoadforMarketNOtrend;
+        double reserveMargin = regulator.getReserveMargin();
+        double demandTarget = peakLoadforMarket * (1 + reserveMargin);
 
         regulator.setDemandTarget(demandTarget);
 
         /*
-         * Map<ElectricitySpotMarket, Double> peakDemand = null;
+         * Zone zone = new Zone(); zone = regulator.getZone();
          * 
-         * for (expectedDemand demand : map.entrySet()) { if (peakDemand == null
-         * || entry.getValue().compareTo(peakDemand.getValue()) > 0) {
-         * peakDemand = entry; } }
+         * // Computing Demand (the current year's demand is not considered for
+         * // regression, as it is forecasted. double expectedDemandFactor = 0d;
+         * ElectricitySpotMarket market = new ElectricitySpotMarket(); market =
+         * reps.marketRepository.findElectricitySpotMarketForZone(zone);
+         * GeometricTrendRegression gtr = new GeometricTrendRegression(); for
+         * (long time = getCurrentTick()-1; time > getCurrentTick()-1 -
+         * regulator.getNumberOfYearsLookingBackToForecastDemand() && time >= 0;
+         * time = time - 1) { gtr.addData(time,
+         * market.getDemandGrowthTrend().getValue(time)); } expectedDemandFactor
+         * = gtr.predict(capabilityYear); //
+         * logger.warn("ExpectedDemandFactor for this tick: " + //
+         * expectedDemandFactor); logger.warn("demand factor " +
+         * market.getDemandGrowthTrend().getValue(getCurrentTick()));
+         * 
+         * // Calculate peak demand across all markets
+         * 
+         * double peakSegmentLoad = 0; peakSegmentLoad =
+         * reps.segmentLoadRepository.peakLoadbyZoneMarketandTime(zone, market);
+         * for (SegmentLoad segmentLoad : market.getLoadDurationCurve()) { if
+         * (segmentLoad.getBaseLoad() > peakSegmentLoad) { peakSegmentLoad =
+         * segmentLoad.getBaseLoad(); } } double peakExpectedDemand =
+         * peakSegmentLoad * (1 + expectedDemandFactor);
+         * 
+         * // Compute demand target by multiplying reserve margin double double
+         * demandTarget = peakExpectedDemand * (1 +
+         * regulator.getReserveMargin());
+         * 
+         * regulator.setDemandTarget(demandTarget);
          */
 
     }

@@ -33,6 +33,7 @@ import agentspring.role.Role;
 import emlab.gen.domain.agent.BigBank;
 import emlab.gen.domain.agent.EnergyProducer;
 import emlab.gen.domain.agent.PowerPlantManufacturer;
+import emlab.gen.domain.agent.Regulator;
 import emlab.gen.domain.contract.CashFlow;
 import emlab.gen.domain.contract.Loan;
 import emlab.gen.domain.gis.Zone;
@@ -76,6 +77,8 @@ public class InvestmentWithCapacityMarketsRole<T extends EnergyProducer> extends
     @Transient
     Map<ElectricitySpotMarket, MarketInformation> marketInfoMap = new HashMap<ElectricitySpotMarket, MarketInformation>();
 
+    Map<PowerPlant, Double> expectedESMOperatingRevenueMap = new HashMap<PowerPlant, Double>();
+
     @Override
     public void act(T agent) {
 
@@ -107,6 +110,9 @@ public class InvestmentWithCapacityMarketsRole<T extends EnergyProducer> extends
 
             MarketInformation marketInformation = new MarketInformation(market, expectedDemand, expectedFuelPrices,
                     expectedCO2Price.get(market).doubleValue(), futureTimePoint);
+
+            CapacityMarketInformation capacityMarketInformation = new CapacityMarketInformation(market, expectedDemand,
+                    futureTimePoint);
             /*
              * if (marketInfoMap.containsKey(market) &&
              * marketInfoMap.get(market).time == futureTimePoint) {
@@ -234,8 +240,9 @@ public class InvestmentWithCapacityMarketsRole<T extends EnergyProducer> extends
                         double fixedOMCost = calculateFixedOperatingCost(plant);// /
                                                                                 // plant.getActualNominalCapacity();
 
-                        double operatingProfit = expectedGrossProfit - fixedOMCost;
-
+                        double operatingProfit = expectedGrossProfit - fixedOMCost
+                                + capacityMarketInformation.expectedCapacityMarketPrice;
+                        putOperatingProfitESM(plant, operatingProfit);
                         // TODO Alter discount rate on the basis of the amount
                         // in long-term contracts?
                         // TODO Alter discount rate on the basis of other stuff,
@@ -353,6 +360,16 @@ public class InvestmentWithCapacityMarketsRole<T extends EnergyProducer> extends
         agent.setWillingToInvest(false);
     }
 
+    // stores expected gross profit for a power plant for a tick
+    public void putOperatingProfitESM(PowerPlant plant, double revenue) {
+        expectedESMOperatingRevenueMap.put(plant, revenue);
+    }
+
+    // returns expected gross profit for a power plant for a tick
+    public double getOperatingProfit(PowerPlant plant) {
+        return expectedESMOperatingRevenueMap.get(plant);
+    }
+
     /**
      * Predicts fuel prices for {@link futureTimePoint} using a geometric trend
      * regression forecast. Only predicts fuels that are traded on a commodity
@@ -362,6 +379,7 @@ public class InvestmentWithCapacityMarketsRole<T extends EnergyProducer> extends
      * @param futureTimePoint
      * @return Map<Substance, Double> of predicted prices.
      */
+
     public Map<Substance, Double> predictFuelPrices(EnergyProducer agent, long futureTimePoint) {
         // Fuel Prices
         Map<Substance, Double> expectedFuelPrices = new HashMap<Substance, Double>();
@@ -443,39 +461,78 @@ public class InvestmentWithCapacityMarketsRole<T extends EnergyProducer> extends
     private class CapacityMarketInformation {
 
         double expectedCapacityMarketPrice;
-        double expectedCMDemand;
+
         double peakSegmentLoad = 0;
         double capacitySum;
+        Map<PowerPlant, Double> marginalCMCostMap = new HashMap<PowerPlant, Double>();
+        Map<PowerPlant, Double> meritOrder;
 
-        CapacityMarketInformation(ElectricitySpotMarket market, Map<ElectricitySpotMarket, Double> expectedDemand, Map<Substance, Double> expectedFuelPrices, double expectedCO2Price, long futureTimePoint) {
-            
-            double co2Price = expectedCO2Price.get(market).doubleValue();
-            MarketInformation marketInformation = new MarketInformation(market, expectedDemand, expectedFuelPrices,
-                   co2Price , futureTimePoint);
+        CapacityMarketInformation(ElectricitySpotMarket market, Map<ElectricitySpotMarket, Double> expectedDemand,
+                long futureTimePoint) {
 
+            double expectedCMDemandTarget;
+            double expectedCMDemand = 0d;
             double demandFactor = expectedDemand.get(market).doubleValue();
             Zone zone = market.getZone();
-
+            double supply = 0d;
+            double capacityPrice = 0d;
+            Regulator regulator = reps.capacityMarketRepository.findRegulatorForZone(zone);
             // calculate expected demand for Capacity Market
             for (SegmentLoad segmentLoad : market.getLoadDurationCurve()) {
                 if (segmentLoad.getBaseLoad() > peakSegmentLoad) {
                     peakSegmentLoad = segmentLoad.getBaseLoad();
                 }
             }
-            expectedCMDemand = reps.capacityMarketRepository.findRegulatorforZone(zone).getReserveMargin()
+            expectedCMDemandTarget = reps.capacityMarketRepository.findRegulatorForZone(zone).getReserveMargin()
                     * peakSegmentLoad * demandFactor;
-            double plantCMMarginalCost = 0d;
-            
+
             // get merit order for this market
-            for (PowerPlant plant : reps.powerPlantRepository.findExpectedOperationalPowerPlantsInMarket(market, futureTimePoint)) {
-                double expectedMarginalCost = determineExpectedMarginalCost(plant, expectedFuelPrices, expectedCO2Price.get(market));
-                double expectedRevenueFromEnergyMarket = (expectedElectricityPrice - expectedMarginalCost) * hours;
-                double expectedElectricityPrice = marketInformation.expectedElectricityPricesPerSegment.get(segmentLoad
-                        .getSegment());
-                double fixedOMCost = calculateFixedOperatingCost(plant);
-                if ()
-                marginalCostMap.put(plant, plantMarginalCost);
+            double marginalCostCapacity = 0d;
+            for (PowerPlant plant : reps.powerPlantRepository.findExpectedOperationalPowerPlantsInMarket(market,
+                    futureTimePoint)) {
+                if (getOperatingProfit(plant) >= 0)
+                    marginalCostCapacity = 0;
+                else
+                    marginalCostCapacity = -getOperatingProfit(plant);
+                marginalCMCostMap.put(plant, marginalCostCapacity);
                 capacitySum += plant.getActualNominalCapacity();
+            }
+            MapValueComparator comp = new MapValueComparator(marginalCMCostMap);
+            meritOrder = new TreeMap<PowerPlant, Double>(comp);
+            meritOrder.putAll(marginalCMCostMap);
+
+            // get capacity price for this merit order, with the demandTarget
+            long numberOfSegments = reps.segmentRepository.count();
+
+            for (Entry<PowerPlant, Double> plantCost : meritOrder.entrySet()) {
+                PowerPlant plant = plantCost.getKey();
+                // Determine max available capacity in the future
+                double plantCapacity = plant.getExpectedAvailableCapacity(futureTimePoint, null, numberOfSegments);
+
+                if (plantCost.getValue() < regulator.getCapacityMarketPriceCap()) {
+
+                    expectedCMDemand = expectedCMDemandTarget
+                            * (1 - regulator.getReserveDemandLowerMargin())
+                            + ((regulator.getCapacityMarketPriceCap() - plantCost.getValue())
+                                    * (regulator.getReserveDemandUpperMargin() + regulator
+                                            .getReserveDemandLowerMargin()) * expectedCMDemandTarget)
+                            / regulator.getCapacityMarketPriceCap();
+
+                    if (supply < expectedCMDemand) {
+                        supply += plantCapacity;
+                        capacityPrice = -getOperatingProfit(plant);
+                    }
+
+                }
+
+            }
+            if (supply >= expectedCMDemand) {
+                expectedCapacityMarketPrice = capacityPrice;
+            } else {
+                capacityPrice = regulator.getCapacityMarketPriceCap()
+                        * (1 + ((expectedCMDemandTarget * (1 - regulator.getReserveDemandLowerMargin()) - supply) / ((regulator
+                                .getReserveDemandUpperMargin() + regulator.getReserveDemandLowerMargin()) * expectedCMDemandTarget)));
+                expectedCapacityMarketPrice = capacityPrice;
             }
 
         }
@@ -520,6 +577,7 @@ public class InvestmentWithCapacityMarketsRole<T extends EnergyProducer> extends
                     double plantMarginalCost = determineExpectedMarginalCost(plant, fuelPrices, co2price);
                     marginalCostMap.put(plant, plantMarginalCost);
                     capacitySum += targetDifference;
+
                 }
             }
 
