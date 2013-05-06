@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
 import agentspring.role.Role;
+import agentspring.role.RoleComponent;
 import emlab.gen.domain.agent.EnergyProducer;
 import emlab.gen.domain.market.Bid;
 import emlab.gen.domain.market.capacity.CapacityDispatchPlan;
@@ -29,11 +30,16 @@ import emlab.gen.domain.technology.PowerPlant;
 import emlab.gen.repository.Reps;
 import emlab.gen.role.AbstractEnergyProducerRole;
 
+//import org.springframework.data.neo4j.annotation.NodeEntity;
+
 /**
  * @author Kaveri
  * 
  */
-public class SubmitCapacityBidToMarketRole extends AbstractEnergyProducerRole implements Role<EnergyProducer> {
+
+@RoleComponent
+public class SubmitCapacityBidToMarketRole extends AbstractEnergyProducerRole<EnergyProducer> implements
+        Role<EnergyProducer> {
 
     @Autowired
     Reps reps;
@@ -67,8 +73,9 @@ public class SubmitCapacityBidToMarketRole extends AbstractEnergyProducerRole im
             double mc = 100d;
             for (SegmentLoad segmentLoad : eMarket.getLoadDurationCurve()) {
 
-                double expectedElectricityPrice = reps.clearingPointRepository.findClearingPointForMarketAndTime(
-                        eMarket, getCurrentTick() - 1).getPrice();
+                double expectedElectricityPrice = reps.segmentClearingPointRepository
+                        .findOneSegmentClearingPointForMarketSegmentAndTime(getCurrentTick() - 1,
+                                segmentLoad.getSegment(), eMarket).getPrice();
                 double hours = segmentLoad.getSegment().getLengthInHours();
                 if (mc <= expectedElectricityPrice) {
                     runningHours += hours;
@@ -81,10 +88,11 @@ public class SubmitCapacityBidToMarketRole extends AbstractEnergyProducerRole im
 
             if (mcCapacity < 0) {
                 bidPrice = 0d;
-            } else if (mcCapacity < fixedOnMCost)
+            } else if (mcCapacity < fixedOnMCost) {
                 bidPrice = mcCapacity;
-            else
+            } else {
                 bidPrice = fixedOnMCost;
+            }
 
             logger.info("Submitting offers for {} with technology {}", plant.getName(), plant.getTechnology().getName());
 
@@ -97,7 +105,10 @@ public class SubmitCapacityBidToMarketRole extends AbstractEnergyProducerRole im
             // longTermContractCapacity, status);
             plan.specifyAndPersist(plant, producer, market, getCurrentTick(), bidPrice, capacity, Bid.SUBMITTED);
 
-            logger.info("Submitted {} for iteration {} to capacity market", plan);
+            // logger.info("Submitted {} for iteration {} to capacity market",
+            // plan);
+            System.out.print(" Submitted bid at price" + bidPrice);
+            System.out.print(" And capacity" + capacity);
 
         }
     }

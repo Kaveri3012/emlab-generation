@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
 import agentspring.role.Role;
+import agentspring.role.RoleComponent;
 import emlab.gen.domain.contract.CashFlow;
 import emlab.gen.domain.market.capacity.CapacityClearingPoint;
 import emlab.gen.domain.market.capacity.CapacityDispatchPlan;
@@ -26,10 +27,13 @@ import emlab.gen.domain.market.capacity.CapacityMarket;
 import emlab.gen.repository.Reps;
 import emlab.gen.role.market.AbstractMarketRole;
 
+//import org.springframework.data.neo4j.annotation.NodeEntity;
+
 /**
  * @author Kaveri
  * 
  */
+@RoleComponent
 public class PaymentFromConsumerToProducerforCapacityRole extends AbstractMarketRole<CapacityMarket> implements
         Role<CapacityMarket> {
 
@@ -44,7 +48,7 @@ public class PaymentFromConsumerToProducerforCapacityRole extends AbstractMarket
                 capacityMarket, getCurrentTick())) {
 
             CapacityClearingPoint capacityClearingPoint = reps.capacityMarketRepository
-                    .findOneCapacityClearingPointForTime(getCurrentTick(), capacityMarket);
+                    .findOneCapacityClearingPointForTimeAndMarket(getCurrentTick(), capacityMarket);
 
             reps.nonTransactionalCreateRepository.createCashFlow(capacityMarket.getConsumer(), plan.getBidder(),
                     plan.getAcceptedAmount() * capacityClearingPoint.getPrice(), CashFlow.SIMPLE_CAPACITY_MARKET,
@@ -60,8 +64,9 @@ public class PaymentFromConsumerToProducerforCapacityRole extends AbstractMarket
      */
     @Override
     public Reps getReps() {
-        // TODO Auto-generated method stub
-        return null;
+
+        return reps;
+
     }
 
 }

@@ -36,15 +36,18 @@ public interface CapacityMarketRepository extends GraphRepository<CapacityMarket
     public CapacityMarket findCapacityMarketForZone(@Param("zone") Zone zone);
 
     @Query(value = "g.idx('__types__')[[className:'emlab.gen.domain.market.capacity.CapacityDispatchPlan']].filter{it.time == tick}.sort{it.price}._()", type = QueryType.Gremlin)
-    public Iterable<CapacityDispatchPlan> findAllSortedCapacityDispatchPlansByPrice(@Param("tick") long time);
+    public Iterable<CapacityDispatchPlan> findAllSortedCapacityDispatchPlansByTime(@Param("tick") long time);
 
     @Query(value = "g.v(market).in('BIDDINGMARKET').propertyFilter('time', FilterPipe.Filter.EQUAL, time).propertyFilter('status', FilterPipe.Filter.GREATER_THAN, 2)", type = QueryType.Gremlin)
     public Iterable<CapacityDispatchPlan> findAllAcceptedCapacityDispatchPlansForTime(
             @Param("market") CapacityMarket capacityMarket, @Param("time") long time);
 
     @Query(value = "g.v(market).in('CAPACITY_MARKET').propertyFilter('time', FilterPipe.Filter.EQUAL, time)", type = QueryType.Gremlin)
-    public CapacityClearingPoint findOneCapacityClearingPointForTime(@Param("time") long time,
+    public CapacityClearingPoint findOneCapacityClearingPointForTimeAndMarket(@Param("time") long time,
             @Param("market") CapacityMarket capacityMarket);
+
+    @Query(value = "g.idx('__types__')[[className:'emlab.gen.domain.market.capacity.CapacityClearingPoint']].filter{it.time == tick}", type = QueryType.Gremlin)
+    public CapacityClearingPoint findOneCapacityClearingPointForTime(@Param("time") long time);
 
     @Query(value = "g.v(zone).in('CAPACITY_MARKET')", type = QueryType.Gremlin)
     public CapacityMarket findCapacityMarketForZoneBackup(@Param("zone") Zone zone);

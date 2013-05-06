@@ -89,4 +89,7 @@ public class Reps {
     @Autowired
     public CapacityMarketRepository capacityMarketRepository;
 
+    @Autowired
+    public ZoneRepository zoneRepository;
+
 }
