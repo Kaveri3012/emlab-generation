@@ -21,7 +21,6 @@ import agentspring.role.AbstractRole;
 import agentspring.role.Role;
 import emlab.gen.domain.agent.EnergyProducer;
 import emlab.gen.domain.agent.Regulator;
-import emlab.gen.domain.gis.Zone;
 import emlab.gen.domain.market.capacity.CapacityMarket;
 import emlab.gen.repository.Reps;
 
@@ -29,7 +28,7 @@ import emlab.gen.repository.Reps;
  * @author Kaveri
  * 
  */
-public class SimpleCapacityMarketMainRole extends AbstractRole<EnergyProducer> implements Role<EnergyProducer> {
+public class SimpleCapacityMarketMainRole extends AbstractRole<CapacityMarket> implements Role<CapacityMarket> {
 
     @Autowired
     Reps reps;
@@ -47,40 +46,31 @@ public class SimpleCapacityMarketMainRole extends AbstractRole<EnergyProducer> i
     PaymentFromConsumerToProducerforCapacityRole paymentFromConsumerToProducerforCapacityRole;
 
     @Override
-    public void act(EnergyProducer agent) {
+    public void act(CapacityMarket market) {
 
-        // loop through every zone?
-        for (Zone zone : reps.zoneRepository.findAll()) {
+        // CapacityMarket capacityMarket =
+        // reps.capacityMarketRepository.findCapacityMarketForZone(regulator.getZone());
+        Regulator regulator = market.getRegulator();
 
-            // boolean
+        // Forecast Demand
+        forecastDemandRole.act(regulator);
 
-            // create regulator
-            Regulator regulator = new Regulator();
-
-            CapacityMarket capacityMarket = new CapacityMarket();
-
-            regulator.setZone(zone);
-            capacityMarket.setZone(zone);
-            capacityMarket.setRegulator(regulator);
-
-            // Forecast Demand
-            forecastDemandRole.act(regulator);
-
-            // Energy producers submit Bids to Capacity market
-
-            submitCapacityBidToMarketRole.act(agent);
-
-            // Clear capacity market
-            clearCapacityMarketRole.act(regulator);
-
-            // ensure cash flows
-            paymentFromConsumerToProducerforCapacityRole.act(capacityMarket);
-
-            // create boolean in the investment algorithm.
-            // add to decarb role.
-            // do a sanity check once.
-
+        // Energy producers submit Bids to Capacity market
+        for (EnergyProducer producer : reps.energyProducerRepository
+                .findAllEnergyProducersExceptForRenewableTargetInvestorsAtRandom()) {
+            submitCapacityBidToMarketRole.act(producer);
         }
 
+        // Clear capacity market
+        clearCapacityMarketRole.act(regulator);
+
+        // ensure cash flows
+        paymentFromConsumerToProducerforCapacityRole.act(market);
+
+        // create boolean in the investment algorithm.
+        // add to decarb role.
+        // do a sanity check once.
+
     }
+
 }

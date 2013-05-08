@@ -47,6 +47,9 @@ public class DecarbonizationModel extends AbstractAgent implements Agent {
     @SimulationParameter(label = "Delete old PPDPs, Bids and Cashflows")
     private boolean deletionOldPPDPBidsAndCashFlowsEnabled;
 
+    @SimulationParameter(label = "Simple Capacity Market")
+    private boolean simpleCapacityMarketEnabled;
+
     @SimulationParameter(label = "Deletion age")
     private long deletionAge;
 
@@ -102,6 +105,10 @@ public class DecarbonizationModel extends AbstractAgent implements Agent {
         return co2TradingImplemented;
     }
 
+    public boolean isSimpleCapacityMarketEnabled() {
+        return simpleCapacityMarketEnabled;
+    }
+
     public boolean isLongTermContractsImplemented() {
         return longTermContractsImplemented;
     }
@@ -130,10 +137,12 @@ public class DecarbonizationModel extends AbstractAgent implements Agent {
         this.simulationLength = simulationLength;
     }
 
+    @Override
     public String getName() {
         return name;
     }
 
+    @Override
     public void setName(String name) {
         this.name = name;
     }
