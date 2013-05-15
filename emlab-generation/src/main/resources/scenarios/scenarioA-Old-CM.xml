@@ -306,7 +306,8 @@
 		p:debtRatioOfInvestments="0.7"
 		p:dismantlingProlongingYearsAfterTechnicalLifetime="0"
 		p:dismantlingRequiredOperatingProfit="0" p:downpaymentFractionOfCash="0.5"
-		p:willingToInvest="true" p:priceMarkUp="${priceMarkUp}"  p:numberOfYearsBacklookingForForecasting="${numberOfYearsBacklookingForForecasting}"/>
+		p:willingToInvest="true" p:priceMarkUp="${priceMarkUp}"  p:numberOfYearsBacklookingForForecasting="${numberOfYearsBacklookingForForecasting}"
+		p:simpleCapacityMarketEnabled="${simpleCapacityMarketEnabled}" />
 	<bean id="energyProducerB" class="emlab.gen.domain.agent.EnergyProducer"
 		p:name="Energy Producer B" p:cash="${startCash}"
 		p:investmentRole-ref="standardInvestmentRole"
@@ -316,7 +317,7 @@
 		p:debtRatioOfInvestments="0.7"
 		p:dismantlingProlongingYearsAfterTechnicalLifetime="0"
 		p:dismantlingRequiredOperatingProfit="0" p:downpaymentFractionOfCash="0.5"
-		p:willingToInvest="true" p:priceMarkUp="${priceMarkUp}"  p:numberOfYearsBacklookingForForecasting="${numberOfYearsBacklookingForForecasting}"/>
+		p:simpleCapacityMarketEnabled="${simpleCapacityMarketEnabled}" p:willingToInvest="true" p:priceMarkUp="${priceMarkUp}"  p:numberOfYearsBacklookingForForecasting="${numberOfYearsBacklookingForForecasting}"/>
 	<bean id="energyProducerC" class="emlab.gen.domain.agent.EnergyProducer"
 		p:investmentRole-ref="standardInvestmentRole"
 		p:name="Energy Producer C" p:cash="${startCash}"
@@ -326,7 +327,7 @@
 		p:debtRatioOfInvestments="0.7"
 		p:dismantlingProlongingYearsAfterTechnicalLifetime="0"
 		p:dismantlingRequiredOperatingProfit="0" p:downpaymentFractionOfCash="0.5"
-		p:willingToInvest="true" p:priceMarkUp="${priceMarkUp}"  p:numberOfYearsBacklookingForForecasting="${numberOfYearsBacklookingForForecasting}"/>
+		p:simpleCapacityMarketEnabled="${simpleCapacityMarketEnabled}"  p:willingToInvest="true" p:priceMarkUp="${priceMarkUp}"  p:numberOfYearsBacklookingForForecasting="${numberOfYearsBacklookingForForecasting}"/>
 	<bean id="energyProducerD" class="emlab.gen.domain.agent.EnergyProducer"
 		p:investmentRole-ref="standardInvestmentRole"
 		p:name="Energy Producer D" p:cash="${startCash}"
@@ -336,7 +337,7 @@
 		p:debtRatioOfInvestments="0.7"
 		p:dismantlingProlongingYearsAfterTechnicalLifetime="0"
 		p:dismantlingRequiredOperatingProfit="0" p:downpaymentFractionOfCash="0.5"
-		p:willingToInvest="true" p:priceMarkUp="${priceMarkUp}"  p:numberOfYearsBacklookingForForecasting="${numberOfYearsBacklookingForForecasting}"/>
+		p:simpleCapacityMarketEnabled="${simpleCapacityMarketEnabled}" p:willingToInvest="true" p:priceMarkUp="${priceMarkUp}"  p:numberOfYearsBacklookingForForecasting="${numberOfYearsBacklookingForForecasting}"/>
 	<bean id="energyProducerE" class="emlab.gen.domain.agent.EnergyProducer"
 		p:investmentRole-ref="standardInvestmentRole"
 		p:name="Energy Producer E" p:cash="${startCash}"
@@ -346,7 +347,7 @@
 		p:debtRatioOfInvestments="0.7"
 		p:dismantlingProlongingYearsAfterTechnicalLifetime="0"
 		p:dismantlingRequiredOperatingProfit="0" p:downpaymentFractionOfCash="0.5"
-		p:willingToInvest="true" p:priceMarkUp="${priceMarkUp}"  p:numberOfYearsBacklookingForForecasting="${numberOfYearsBacklookingForForecasting}"/>
+		p:simpleCapacityMarketEnabled="${simpleCapacityMarketEnabled}" p:willingToInvest="true" p:priceMarkUp="${priceMarkUp}"  p:numberOfYearsBacklookingForForecasting="${numberOfYearsBacklookingForForecasting}"/>
 	<bean id="energyProducerF" class="emlab.gen.domain.agent.EnergyProducer"
 		p:name="Energy Producer F" p:cash="${startCash}"
 		p:investmentRole-ref="standardInvestmentRole"
@@ -356,7 +357,7 @@
 		p:debtRatioOfInvestments="0.7"
 		p:dismantlingProlongingYearsAfterTechnicalLifetime="0"
 		p:dismantlingRequiredOperatingProfit="0" p:downpaymentFractionOfCash="0.5"
-		p:willingToInvest="true" p:priceMarkUp="${priceMarkUp}"  p:numberOfYearsBacklookingForForecasting="${numberOfYearsBacklookingForForecasting}"/>
+		p:simpleCapacityMarketEnabled="${simpleCapacityMarketEnabled}" p:willingToInvest="true" p:priceMarkUp="${priceMarkUp}"  p:numberOfYearsBacklookingForForecasting="${numberOfYearsBacklookingForForecasting}"/>
 	<bean id="energyProducerG" class="emlab.gen.domain.agent.EnergyProducer"
 		p:name="Energy Producer G" p:cash="${startCash}"
 		p:investmentRole-ref="standardInvestmentRole"
@@ -366,7 +367,7 @@
 		p:debtRatioOfInvestments="0.7"
 		p:dismantlingProlongingYearsAfterTechnicalLifetime="0"
 		p:dismantlingRequiredOperatingProfit="0" p:downpaymentFractionOfCash="0.5"
-		p:willingToInvest="true" p:priceMarkUp="${priceMarkUp}"  p:numberOfYearsBacklookingForForecasting="${numberOfYearsBacklookingForForecasting}"/>
+		p:simpleCapacityMarketEnabled="${simpleCapacityMarketEnabled}" p:willingToInvest="true" p:priceMarkUp="${priceMarkUp}"  p:numberOfYearsBacklookingForForecasting="${numberOfYearsBacklookingForForecasting}"/>
 	<bean id="energyProducerH" class="emlab.gen.domain.agent.EnergyProducer"
 		p:name="Energy Producer H" p:cash="${startCash}"
 		p:investmentRole-ref="standardInvestmentRole"
@@ -376,7 +377,7 @@
 		p:debtRatioOfInvestments="0.7"
 		p:dismantlingProlongingYearsAfterTechnicalLifetime="0"
 		p:dismantlingRequiredOperatingProfit="0" p:downpaymentFractionOfCash="0.5"
-		p:willingToInvest="true" p:priceMarkUp="${priceMarkUp}"  p:numberOfYearsBacklookingForForecasting="${numberOfYearsBacklookingForForecasting}"/>
+		p:simpleCapacityMarketEnabled="${simpleCapacityMarketEnabled}" p:willingToInvest="true" p:priceMarkUp="${priceMarkUp}"  p:numberOfYearsBacklookingForForecasting="${numberOfYearsBacklookingForForecasting}"/>
 	<bean id="energyProducerI" class="emlab.gen.domain.agent.EnergyProducer"
 		p:name="Energy Producer I" p:cash="${startCash}"
 		p:investmentRole-ref="standardInvestmentRole"
@@ -386,21 +387,26 @@
 		p:debtRatioOfInvestments="0.7"
 		p:dismantlingProlongingYearsAfterTechnicalLifetime="0"
 		p:dismantlingRequiredOperatingProfit="0" p:downpaymentFractionOfCash="0.5"
-		p:willingToInvest="true" p:priceMarkUp="${priceMarkUp}"  p:numberOfYearsBacklookingForForecasting="${numberOfYearsBacklookingForForecasting}"/>
+		p:simpleCapacityMarketEnabled="${simpleCapacityMarketEnabled}" p:willingToInvest="true" p:priceMarkUp="${priceMarkUp}"  p:numberOfYearsBacklookingForForecasting="${numberOfYearsBacklookingForForecasting}"/>
 		
 		
 	<bean id="regulatorA" class="emlab.gen.domain.agent.Regulator"
 		p:name="Regulator A" p:capacityMarketPriceCap="${capacityMarketPriceCap}"
 		p:reserveMargin="${reserveMargin}" p:targetPeriod="0"
 		p:reserveDemandLowerMargin="${reserveDemandLowerMargin}" p:reserveDemandUpperMargin="${reserveDemandUpperMargin}"
-		p:numberOfYearsLookingBackToForecastDemand="4"
-		p:zone="nl"/>
+		p:numberOfYearsLookingBackToForecastDemand="4"> 
+		<property name="zone" ref="nl" />
+		</bean>
 		
-	<bean id="capacityMarketA" class="emlab.gen.domain.market.capacity"
-		p:name="Capacity Market A" p:regulator="regulatorA"
-		p:zone="nl" p:consumer="energyConsumer"  />
+		
+	<bean id="capacityMarketA" class="emlab.gen.domain.market.capacity.CapacityMarket"
+		p:name="Capacity Market A" >
+		<property name="regulator" ref="regulatorA"/>
+		<property name="consumer" ref="energyConsumer"/>
+		<property name="zone" ref="nl" />
+		</bean>
 	
-	<bean id="standardInvestmentRole" class="emlab.gen.role.investment.InvestInPowerGenerationTechnologiesRole"/>
+	<bean id="standardInvestmentRole" class="emlab.gen.role.investment.InvestmentWithCapacityMarketsRole"/>
 
 	<bean id="powerPlantManufacturer" class="emlab.gen.domain.agent.PowerPlantManufacturer"
 		p:name="Power Plant Manufacturer" />
@@ -715,7 +721,7 @@
 	<!-- Parameter file -->
 	<bean id="projectPropertyConfigurer"
 		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-		<property name="location" value="classpath:scenarios/parametersA-Old.properties" />
+		<property name="location" value="classpath:scenarios/parametersA-Old-CM.properties" />
 	</bean>
 
 </beans>

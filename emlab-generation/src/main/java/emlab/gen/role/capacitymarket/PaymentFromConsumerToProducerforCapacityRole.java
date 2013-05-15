@@ -40,6 +40,8 @@ public class PaymentFromConsumerToProducerforCapacityRole extends AbstractMarket
     @Autowired
     Reps reps;
 
+    // CashFlow cash = new CashFlow();
+
     @Override
     @Transactional
     public void act(CapacityMarket capacityMarket) {
@@ -50,6 +52,12 @@ public class PaymentFromConsumerToProducerforCapacityRole extends AbstractMarket
             CapacityClearingPoint capacityClearingPoint = reps.capacityMarketRepository
                     .findOneCapacityClearingPointForTimeAndMarket(getCurrentTick(), capacityMarket);
 
+            logger.warn("consumer is " + capacityMarket.getConsumer().getName());
+            logger.warn("the bidder is " + plan.getBidder().getName());
+            logger.warn("Amount to be transferred is " + plan.getAcceptedAmount());
+            // logger.warn("Clearing Point price is " +
+            // capacityClearingPoint.getPrice());
+            logger.warn("plant related to plant" + plan.getPlant().getName());
             reps.nonTransactionalCreateRepository.createCashFlow(capacityMarket.getConsumer(), plan.getBidder(),
                     plan.getAcceptedAmount() * capacityClearingPoint.getPrice(), CashFlow.SIMPLE_CAPACITY_MARKET,
                     getCurrentTick(), plan.getPlant());

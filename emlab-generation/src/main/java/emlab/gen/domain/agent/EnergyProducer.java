@@ -26,8 +26,8 @@ import emlab.gen.role.investment.GenericInvestmentRole;
 @NodeEntity
 public class EnergyProducer extends DecarbonizationAgent implements Agent {
 
-	@RelatedTo(type = "PRODUCER_INVESTMENTROLE", elementClass = GenericInvestmentRole.class, direction = Direction.OUTGOING)
-	GenericInvestmentRole<EnergyProducer> investmentRole;
+    @RelatedTo(type = "PRODUCER_INVESTMENTROLE", elementClass = GenericInvestmentRole.class, direction = Direction.OUTGOING)
+    GenericInvestmentRole<EnergyProducer> investmentRole;
 
     @SimulationParameter(label = "Price Mark-Up for spotmarket (as multiplier)", from = 1, to = 2)
     private double priceMarkUp;
@@ -38,7 +38,7 @@ public class EnergyProducer extends DecarbonizationAgent implements Agent {
     @SimulationParameter(label = "Long-term contract horizon", from = 0, to = 10)
     private double longTermContractPastTimeHorizon;
 
-    //Investment
+    // Investment
     @SimulationParameter(label = "Investment horizon", from = 0, to = 15)
     private int investmentFutureTimeHorizon;
     @SimulationParameter(label = "Equity Interest Rate", from = 0, to = 1)
@@ -48,11 +48,21 @@ public class EnergyProducer extends DecarbonizationAgent implements Agent {
     private double debtRatioOfInvestments;
     private boolean willingToInvest;
 
+    private boolean isSimpleCapacityMarketEnabled;
+
+    public boolean isSimpleCapacityMarketEnabled() {
+        return isSimpleCapacityMarketEnabled;
+    }
+
+    public void setSimpleCapacityMarketEnabled(boolean isSimpleCapacityMarketEnabled) {
+        this.isSimpleCapacityMarketEnabled = isSimpleCapacityMarketEnabled;
+    }
+
     // Loan
     @SimulationParameter(label = "Loan Interest Rate", from = 0, to = 1)
     private double loanInterestRate;
-    
-    //Forecasting
+
+    // Forecasting
     private int numberOfYearsBacklookingForForecasting;
 
     // Dismantling
@@ -93,14 +103,14 @@ public class EnergyProducer extends DecarbonizationAgent implements Agent {
     }
 
     public int getNumberOfYearsBacklookingForForecasting() {
-		return numberOfYearsBacklookingForForecasting;
-	}
+        return numberOfYearsBacklookingForForecasting;
+    }
 
-	public void setNumberOfYearsBacklookingForForecasting(int numberOfYearsBacklookingForForecasting) {
-		this.numberOfYearsBacklookingForForecasting = numberOfYearsBacklookingForForecasting;
-	}
+    public void setNumberOfYearsBacklookingForForecasting(int numberOfYearsBacklookingForForecasting) {
+        this.numberOfYearsBacklookingForForecasting = numberOfYearsBacklookingForForecasting;
+    }
 
-	public int getDismantlingProlongingYearsAfterTechnicalLifetime() {
+    public int getDismantlingProlongingYearsAfterTechnicalLifetime() {
         return dismantlingProlongingYearsAfterTechnicalLifetime;
     }
 
@@ -164,11 +174,11 @@ public class EnergyProducer extends DecarbonizationAgent implements Agent {
         this.priceMarkUp = priceMarkUp;
     }
 
-	public GenericInvestmentRole getInvestmentRole() {
-		return investmentRole;
-	}
+    public GenericInvestmentRole getInvestmentRole() {
+        return investmentRole;
+    }
 
-	public void setInvestmentRole(GenericInvestmentRole investmentRole) {
-		this.investmentRole = investmentRole;
-	}
+    public void setInvestmentRole(GenericInvestmentRole investmentRole) {
+        this.investmentRole = investmentRole;
+    }
 }

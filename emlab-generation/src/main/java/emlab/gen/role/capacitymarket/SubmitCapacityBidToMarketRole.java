@@ -15,6 +15,7 @@
  ******************************************************************************/
 package emlab.gen.role.capacitymarket;
 
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,21 +42,30 @@ import emlab.gen.role.AbstractEnergyProducerRole;
 public class SubmitCapacityBidToMarketRole extends AbstractEnergyProducerRole<EnergyProducer> implements
         Role<EnergyProducer> {
 
+    Logger logger = Logger.getLogger(SubmitCapacityBidToMarketRole.class);
+
     @Autowired
     Reps reps;
 
     @Override
     @Transactional
     public void act(EnergyProducer producer) {
+        logger.warn("Itsme");
 
         for (PowerPlant plant : reps.powerPlantRepository.findOperationalPowerPlantsByOwner(producer, getCurrentTick())) {
+
+            logger.warn("Power Plant is " + plant.getName());
 
             // get market for the plant by zone
             CapacityMarket market = reps.capacityMarketRepository.findCapacityMarketForZone(plant.getLocation()
                     .getZone());
 
+            // logger.warn("Capacity Market is " + market.getName());
+
             ElectricitySpotMarket eMarket = reps.marketRepository.findElectricitySpotMarketForZone(plant.getLocation()
                     .getZone());
+
+            logger.warn("Electricity Market is " + eMarket.getName());
 
             // compute bid price as (fixedOMCost - elecricityMarketRevenue), if
             // the difference is positive. Else if negative, bid at zero.
@@ -68,17 +78,26 @@ public class SubmitCapacityBidToMarketRole extends AbstractEnergyProducerRole<En
             // electricity spot market prices
             long numberOfSegments = reps.segmentRepository.count();
             double electricityMarketRevenue = 0d;
-            double runningHours = 0d;
-            // double mc = calculateMarginalCostExclCO2MarketCost(plant);
-            double mc = 100d;
+            // double runningHours = 0d;
+
+            double mc = calculateMarginalCostExclCO2MarketCost(plant);
+            double expectedElectricityPrice = 0;
+            // double mc = 0;
             for (SegmentLoad segmentLoad : eMarket.getLoadDurationCurve()) {
 
-                double expectedElectricityPrice = reps.segmentClearingPointRepository
-                        .findOneSegmentClearingPointForMarketSegmentAndTime(getCurrentTick() - 1,
-                                segmentLoad.getSegment(), eMarket).getPrice();
+                if (getCurrentTick() == 0) {
+                    mc = 0;
+                    expectedElectricityPrice = 0;
+
+                } else {
+                    expectedElectricityPrice = reps.segmentClearingPointRepository
+                            .findOneSegmentClearingPointForMarketSegmentAndTime(getCurrentTick() - 1,
+                                    segmentLoad.getSegment(), eMarket).getPrice();
+                }
+
                 double hours = segmentLoad.getSegment().getLengthInHours();
                 if (mc <= expectedElectricityPrice) {
-                    runningHours += hours;
+                    // runningHours += hours;
                     electricityMarketRevenue += (expectedElectricityPrice - mc) * hours
                             * plant.getAvailableCapacity(getCurrentTick(), segmentLoad.getSegment(), numberOfSegments);
                 }
@@ -88,16 +107,16 @@ public class SubmitCapacityBidToMarketRole extends AbstractEnergyProducerRole<En
 
             if (mcCapacity < 0) {
                 bidPrice = 0d;
-            } else if (mcCapacity < fixedOnMCost) {
+            } else if (mcCapacity <= fixedOnMCost) {
                 bidPrice = mcCapacity;
-            } else {
-                bidPrice = fixedOnMCost;
             }
 
-            logger.info("Submitting offers for {} with technology {}", plant.getName(), plant.getTechnology().getName());
+            // logger.info("Submitting offers for {} with technology {}",
+            // plant.getName(), plant.getTechnology().getName());
 
             double capacity = plant.getAvailableCapacity(getCurrentTick(), null, numberOfSegments);
-            logger.info("I bid capacity: {} and price: {} into the capacity market", capacity, bidPrice);
+            // logger.info("I bid capacity: {} and price: {} into the capacity market",
+            // capacity, bidPrice);
 
             CapacityDispatchPlan plan = new CapacityDispatchPlan().persist();
             // plan.specifyNotPersist(plant, producer, market, segment,

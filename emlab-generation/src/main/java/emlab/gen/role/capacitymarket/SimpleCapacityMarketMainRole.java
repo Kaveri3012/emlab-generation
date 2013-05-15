@@ -16,9 +16,11 @@
 package emlab.gen.role.capacitymarket;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 import agentspring.role.AbstractRole;
 import agentspring.role.Role;
+import agentspring.role.RoleComponent;
 import emlab.gen.domain.agent.EnergyProducer;
 import emlab.gen.domain.agent.Regulator;
 import emlab.gen.domain.market.capacity.CapacityMarket;
@@ -28,6 +30,8 @@ import emlab.gen.repository.Reps;
  * @author Kaveri
  * 
  */
+
+@RoleComponent
 public class SimpleCapacityMarketMainRole extends AbstractRole<CapacityMarket> implements Role<CapacityMarket> {
 
     @Autowired
@@ -46,6 +50,7 @@ public class SimpleCapacityMarketMainRole extends AbstractRole<CapacityMarket> i
     PaymentFromConsumerToProducerforCapacityRole paymentFromConsumerToProducerforCapacityRole;
 
     @Override
+    @Transactional
     public void act(CapacityMarket market) {
 
         // CapacityMarket capacityMarket =
@@ -54,18 +59,25 @@ public class SimpleCapacityMarketMainRole extends AbstractRole<CapacityMarket> i
 
         // Forecast Demand
         forecastDemandRole.act(regulator);
+        logger.warn("Forecast demand role run");
 
         // Energy producers submit Bids to Capacity market
         for (EnergyProducer producer : reps.energyProducerRepository
                 .findAllEnergyProducersExceptForRenewableTargetInvestorsAtRandom()) {
             submitCapacityBidToMarketRole.act(producer);
         }
+        logger.warn("capacity bids submitted");
 
         // Clear capacity market
         clearCapacityMarketRole.act(regulator);
 
+        logger.warn("Capacity Market cleared");
+
         // ensure cash flows
         paymentFromConsumerToProducerforCapacityRole.act(market);
+        logger.warn("capacity payments made");
+
+        logger.warn("Capacity Market Main Role Completed  once");
 
         // create boolean in the investment algorithm.
         // add to decarb role.

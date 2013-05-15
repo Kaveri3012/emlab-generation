@@ -15,6 +15,8 @@
  ******************************************************************************/
 package emlab.gen.repository;
 
+import java.util.ArrayList;
+
 import org.springframework.data.neo4j.annotation.Query;
 import org.springframework.data.neo4j.annotation.QueryType;
 import org.springframework.data.neo4j.repository.GraphRepository;

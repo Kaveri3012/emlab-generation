@@ -32,7 +32,7 @@ import emlab.gen.domain.market.capacity.CapacityMarket;
  */
 public interface CapacityMarketRepository extends GraphRepository<CapacityMarket> {
 
-    @Query(value = "g.v(zone).in('ZONE').filter{it.__type__=='emlab.gen.domain.market.capacity.CapacityMarket'}.next()", type = QueryType.Gremlin)
+    @Query(value = "g.v(zone).in('ZONE').filter{it.__type__=='emlab.gen.domain.market.capacity.CapacityMarket'}", type = QueryType.Gremlin)
     public CapacityMarket findCapacityMarketForZone(@Param("zone") Zone zone);
 
     @Query(value = "g.idx('__types__')[[className:'emlab.gen.domain.market.capacity.CapacityDispatchPlan']].filter{it.time == tick}.sort{it.price}._()", type = QueryType.Gremlin)
@@ -49,10 +49,7 @@ public interface CapacityMarketRepository extends GraphRepository<CapacityMarket
     @Query(value = "g.idx('__types__')[[className:'emlab.gen.domain.market.capacity.CapacityClearingPoint']].filter{it.time == tick}", type = QueryType.Gremlin)
     public CapacityClearingPoint findOneCapacityClearingPointForTime(@Param("time") long time);
 
-    @Query(value = "g.v(zone).in('CAPACITY_MARKET')", type = QueryType.Gremlin)
-    public CapacityMarket findCapacityMarketForZoneBackup(@Param("zone") Zone zone);
-
-    @Query(value = "g.v(zone).in('REGULATOR')", type = QueryType.Gremlin)
+    @Query(value = "g.v(zone).in('OF_ZONE')", type = QueryType.Gremlin)
     public Regulator findRegulatorForZone(@Param("zone") Zone zone);
 
 }

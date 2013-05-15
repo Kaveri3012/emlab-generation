@@ -239,9 +239,15 @@ public class InvestmentWithCapacityMarketsRole<T extends EnergyProducer> extends
 
                         double fixedOMCost = calculateFixedOperatingCost(plant);// /
                                                                                 // plant.getActualNominalCapacity();
+                        double capacityRevenue = 0d;
+                        if (agent.isSimpleCapacityMarketEnabled()) {
+                            capacityRevenue = capacityMarketInformation.expectedCapacityMarketPrice;
+                        } else {
+                            capacityRevenue = 0;
+                        }
 
-                        double operatingProfit = expectedGrossProfit - fixedOMCost
-                                + capacityMarketInformation.expectedCapacityMarketPrice;
+                        double operatingProfit = expectedGrossProfit - fixedOMCost + capacityRevenue;
+
                         putOperatingProfitESM(plant, operatingProfit);
                         // TODO Alter discount rate on the basis of the amount
                         // in long-term contracts?

@@ -120,6 +120,7 @@ public class PaymentFromConsumerToProducerforCapacityRoleTest {
         logger.warn("Energy Producer2's Cash before Payment Process" + ep2.getCash());
 
         paymentFromConsumerToProducerforCapacityRole.act(market);
+
         logger.warn("Consumer's Cash After Payment Process " + consumer.getCash());
         logger.warn("Energy Producer1's Cash After Payment Process" + ep1.getCash());
         logger.warn("Energy Producer2's Cash After Payment Process" + ep2.getCash());

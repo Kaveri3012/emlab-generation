@@ -22,6 +22,7 @@ import agentspring.role.AbstractRole;
 import agentspring.role.Role;
 import agentspring.role.RoleComponent;
 import emlab.gen.domain.agent.Regulator;
+import emlab.gen.domain.market.Bid;
 import emlab.gen.domain.market.capacity.CapacityClearingPoint;
 import emlab.gen.domain.market.capacity.CapacityDispatchPlan;
 import emlab.gen.repository.Reps;
@@ -73,56 +74,55 @@ public class ClearCapacityMarketRole extends AbstractRole<Regulator> implements 
                                 * (regulator.getReserveDemandUpperMargin() + regulator.getReserveDemandLowerMargin()) * regulator
                                     .getDemandTarget()) / regulator.getCapacityMarketPriceCap();
 
-                // logger.warn("Price of this cdp is " + currentCDP.getPrice());
+                logger.warn("Price of this cdp is " + currentCDP.getPrice());
                 // logger.warn("Demand at this cdp is " + demand);
 
                 if (isTheMarketCleared == false) {
-                    double temp = demand - (sumofSupplyBidsAccepted + currentCDP.getAmount());
-                    logger.warn("Demand minus currently considered bids " + temp);
                     if (demand - (sumofSupplyBidsAccepted + currentCDP.getAmount()) >= -clearingEpsilon) {
                         acceptedPrice = currentCDP.getPrice();
-                        currentCDP.setStatus(currentCDP.ACCEPTED);
+                        currentCDP.setStatus(Bid.ACCEPTED);
                         currentCDP.setAcceptedAmount(currentCDP.getAmount());
                         sumofSupplyBidsAccepted = sumofSupplyBidsAccepted + currentCDP.getAmount();
-
-                        // logger.warn("{}", sumofSupplyBidsAccepted);
+                        logger.warn("Price of this cdp is " + currentCDP.getPrice());
+                        logger.warn("accepted price" + acceptedPrice);
                     }
 
                     else if (demand - (sumofSupplyBidsAccepted + currentCDP.getAmount()) < clearingEpsilon) {
 
-                        currentCDP.setStatus(currentCDP.PARTLY_ACCEPTED);
-                        currentCDP.setAcceptedAmount((demand - sumofSupplyBidsAccepted));
+                        currentCDP.setStatus(Bid.PARTLY_ACCEPTED);
+                        currentCDP.setAcceptedAmount((sumofSupplyBidsAccepted - demand));
                         acceptedPrice = currentCDP.getPrice();
                         sumofSupplyBidsAccepted = sumofSupplyBidsAccepted + currentCDP.getAcceptedAmount();
                         isTheMarketCleared = true;
 
-                        // logger.warn("Accepted" +
-                        // currentBid.getAcceptedVolume());
+                        logger.warn("accepted price" + acceptedPrice);
 
                     }
+
+                    // else if (demand - sumofSupplyBidsAccepted <
+                    // clearingEpsilon) {
+                    // isTheMarketCleared = true;
+                    // }
+                } else {
+                    currentCDP.setStatus(Bid.FAILED);
+                    currentCDP.setAcceptedAmount(0);
                 }
 
-            } else {
-                currentCDP.setStatus(currentCDP.FAILED);
-                currentCDP.setAcceptedAmount(0);
+                logger.warn("Cumulatively Accepted Supply " + sumofSupplyBidsAccepted);
+                // currentCDP.persist();
+
             }
-
-            if (demand - sumofSupplyBidsAccepted < clearingEpsilon) {
-                isTheMarketCleared = true;
-            }
-
-            logger.warn("Cumulatively Accepted Supply " + sumofSupplyBidsAccepted);
-
         }
 
+        CapacityClearingPoint clearingPoint = new CapacityClearingPoint();
         if (isTheMarketCleared == true) {
             // sumofSupplyBidsAccepted = demand;
-            CapacityClearingPoint clearingPoint = new CapacityClearingPoint();
+            logger.warn("accepted price at the clearing point, with the market cleared" + acceptedPrice);
             clearingPoint.setPrice(acceptedPrice);
             clearingPoint.setVolume(sumofSupplyBidsAccepted);
             clearingPoint.setTime(getCurrentTick());
             // clearingPoint.setCapacityMarket(market);
-            clearingPoint.persist();
+            // clearingPoint.persist();
             logger.warn("Clearing point Price" + clearingPoint.getPrice());
             logger.warn("Clearing Point Volume" + clearingPoint.getVolume());
         } else {
@@ -130,18 +130,18 @@ public class ClearCapacityMarketRole extends AbstractRole<Regulator> implements 
                     * (1 + ((regulator.getDemandTarget() * (1 - regulator.getReserveDemandLowerMargin()) - sumofSupplyBidsAccepted) / ((regulator
                             .getReserveDemandUpperMargin() + regulator.getReserveDemandLowerMargin()) * regulator
                             .getDemandTarget())));
-            CapacityClearingPoint clearingPoint = new CapacityClearingPoint();
             clearingPoint.setPrice(max(regulator.getCapacityMarketPriceCap(), acceptedPrice));
             clearingPoint.setVolume(sumofSupplyBidsAccepted);
             clearingPoint.setTime(getCurrentTick());
             // clearingPoint.setCapacityMarket(market);
-            clearingPoint.persist();
-            logger.warn("Clearing point Price" + clearingPoint.getPrice());
-            logger.warn("Clearing Point Volume" + clearingPoint.getVolume());
+            // clearingPoint.persist();
+            logger.warn("accepted price at the clearing point with market uncleared" + acceptedPrice);
+
         }
-
-        logger.warn("is the market cleared? " + isTheMarketCleared);
-
+        clearingPoint.persist();
+        // logger.warn("is the market cleared? " + isTheMarketCleared);
+        // logger.warn("Clearing point Price" + clearingPoint.getPrice());
+        // logger.warn("Clearing Point Volume" + clearingPoint.getVolume());
     }
 
     /**

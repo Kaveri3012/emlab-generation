@@ -18,7 +18,6 @@ package emlab.gen.role.capacitymarket;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +26,9 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import emlab.gen.domain.agent.EnergyProducer;
+import emlab.gen.domain.agent.Regulator;
 import emlab.gen.domain.gis.Zone;
+import emlab.gen.domain.market.capacity.CapacityDispatchPlan;
 import emlab.gen.domain.market.capacity.CapacityMarket;
 import emlab.gen.domain.market.electricity.ElectricitySpotMarket;
 import emlab.gen.domain.market.electricity.Segment;
@@ -43,21 +44,32 @@ import emlab.gen.trend.TriangularTrend;
  * @author Kaveri
  * 
  */
+
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration({ "/emlab-gen-test-context.xml" })
 @Transactional
-public class SubmitCapacityBidToMarketRoleTest {
-
-    Logger logger = Logger.getLogger(SubmitCapacityBidToMarketRole.class);
+public class SimpleCapacityMarketMainRoleTest {
 
     @Autowired
     Reps reps;
 
     @Autowired
-    SubmitCapacityBidToMarketRole submitCapacityBidRole;
+    SimpleCapacityMarketMainRole simpleCapacityMarketMainRole;
 
     @Test
-    public void testSubmitBidFunctionality() {
+    public void CapacityMarketMainFunctionality() {
+        Zone zone = new Zone();
+        zone.persist();
+        Regulator regulator = new Regulator();
+        regulator.setTargetPeriod(0);
+        regulator.setReserveMargin(0.15);
+        regulator.setDemandTarget(100);
+        regulator.setCapacityMarketPriceCap(10);
+        regulator.setReserveDemandLowerMargin(0.15);
+        regulator.setReserveDemandUpperMargin(0.05);
+        regulator.setNumberOfYearsLookingBackToForecastDemand(3);
+        regulator.setZone(zone);
+        regulator.persist();
 
         Segment S1 = new Segment();
         S1.setLengthInHours(20);
@@ -70,7 +82,7 @@ public class SubmitCapacityBidToMarketRoleTest {
         SegmentLoad SG1 = new SegmentLoad();
         SG1.setSegment(S2);
         SG1.setBaseLoad(2500);
-
+        SG1.persist();
         // SegmentLoad SG2 = new SegmentLoad();
         // SG2.setSegment(S2);
         // SG2.setBaseLoad(2000);
@@ -83,40 +95,42 @@ public class SubmitCapacityBidToMarketRoleTest {
         // SG4.setSegment(S1);
         // SG4.setBaseLoad(4000);
 
-        SG1.persist();
         // SG2.persist();
         SG3.persist();
         // SG4.persist();
 
-        Set<SegmentLoad> segmentLoads = new HashSet<SegmentLoad>();
-        segmentLoads.add(SG1);
-        segmentLoads.add(SG3);
+        Set<SegmentLoad> segmentLoads1 = new HashSet<SegmentLoad>();
+        segmentLoads1.add(SG1);
+        segmentLoads1.add(SG3);
+        //
+        // TimeSeriesImpl demandGrowthTrend = new TimeSeriesImpl();
+        // int lengthOfSeries = 50;
+        // double[] timeSeries = new double[lengthOfSeries];
+        // timeSeries[0] = 1;
+        // for (int i = 1; i <= lengthOfSeries; i++) {
+        // timeSeries[i] = timeSeries[i - 1] * 1.02;
+        // }
 
-        // Set<SegmentLoad> segmentLoads2 = new HashSet<SegmentLoad>();
-        // segmentLoads2.add(SG2);
-        // segmentLoads2.add(SG4);
-
-        /*
-         * TriangularTrend demandGrowthTrend = new TriangularTrend();
-         * demandGrowthTrend.setMax(2); demandGrowthTrend.setMin(0);
-         * demandGrowthTrend.setStart(1); demandGrowthTrend.setTop(1);
-         * 
-         * demandGrowthTrend.persist();
-         */
-
-        Zone zone = new Zone();
-        zone.persist();
+        TriangularTrend demandGrowthTrend = new TriangularTrend();
+        demandGrowthTrend.setMax(2);
+        demandGrowthTrend.setMin(1);
+        demandGrowthTrend.setStart(1);
+        demandGrowthTrend.setTop(1);
 
         PowerGridNode location = new PowerGridNode();
         location.setZone(zone);
         location.persist();
 
-        ElectricitySpotMarket market = new ElectricitySpotMarket();
-        market.setName("Market1");
-        market.setZone(zone);
-        market.setLoadDurationCurve(segmentLoads);
-        // market.setDemandGrowthTrend(demandGrowthTrend);
-        market.persist();
+        // demandGrowthTrend.setTimeSeries(timeSeries);
+        // demandGrowthTrend.setStartingYear(0);
+        demandGrowthTrend.persist();
+
+        ElectricitySpotMarket market1 = new ElectricitySpotMarket();
+        market1.setName("Market1");
+        market1.setLoadDurationCurve(segmentLoads1);
+        market1.setDemandGrowthTrend(demandGrowthTrend);
+        market1.setZone(zone);
+        market1.persist();
 
         TriangularTrend gasFixedOperatingCostTimeSeries = new TriangularTrend();
         // gasFixedOperatingCostTimeSeries[0]
@@ -238,29 +252,62 @@ public class SubmitCapacityBidToMarketRoleTest {
 
         CapacityMarket cMarket = new CapacityMarket();
         cMarket.setName("Capaciteit Markt");
+        cMarket.setRegulator(regulator);
         cMarket.setZone(zone);
         cMarket.persist();
 
         SegmentClearingPoint clearingPoint1 = new SegmentClearingPoint();
         clearingPoint1.setSegment(S1);
-        clearingPoint1.setAbstractMarket(market);
+        clearingPoint1.setAbstractMarket(market1);
         clearingPoint1.setPrice(25);
         clearingPoint1.setTime(0);
         clearingPoint1.persist();
 
         SegmentClearingPoint clearingPoint2 = new SegmentClearingPoint();
         clearingPoint2.setSegment(S2);
-        clearingPoint2.setAbstractMarket(market);
+        clearingPoint2.setAbstractMarket(market1);
         clearingPoint2.setPrice(7);
         clearingPoint2.setTime(0);
         clearingPoint2.persist();
 
-        for (EnergyProducer ep : reps.energyProducerRepository
-                .findAllEnergyProducersExceptForRenewableTargetInvestorsAtRandom()) {
-            submitCapacityBidRole.act(ep);
-            logger.warn("Submitted");
+        CapacityDispatchPlan cdp1 = new CapacityDispatchPlan();
+        cdp1.setBidder(e1);
+        cdp1.setBiddingMarket(market1);
+        cdp1.setTime(0l);
+        cdp1.setAcceptedAmount(100);
+        cdp1.setPlant(pp1);
+        cdp1.setStatus(3);
+        cdp1.persist();
 
-        }
+        CapacityDispatchPlan cdp2 = new CapacityDispatchPlan();
+        cdp2.setBidder(e1);
+        cdp2.setBiddingMarket(market1);
+        cdp2.setTime(0l);
+        cdp2.setAcceptedAmount(80);
+        cdp2.setPlant(pp2);
+        cdp2.setStatus(2);
+        cdp2.persist();
+
+        CapacityDispatchPlan cdp3 = new CapacityDispatchPlan();
+        cdp3.setBidder(e2);
+        cdp3.setBiddingMarket(market1);
+        cdp3.setTime(0l);
+        cdp3.setAcceptedAmount(150);
+        cdp3.setPlant(pp3);
+        cdp3.setStatus(3);
+        cdp3.persist();
+
+        CapacityDispatchPlan cdp4 = new CapacityDispatchPlan();
+        cdp4.setBidder(e2);
+        cdp4.setBiddingMarket(market1);
+        cdp4.setTime(0l);
+        cdp4.setAcceptedAmount(100);
+        cdp4.setPlant(pp4);
+        cdp4.setStatus(3);
+        cdp4.persist();
+
+        simpleCapacityMarketMainRole.act(cMarket);
 
     }
+
 }
