@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
@@ -77,7 +78,8 @@ public class InvestmentWithCapacityMarketsRole<T extends EnergyProducer> extends
     @Transient
     Map<ElectricitySpotMarket, MarketInformation> marketInfoMap = new HashMap<ElectricitySpotMarket, MarketInformation>();
 
-    Map<PowerPlant, Double> expectedESMOperatingRevenueMap = new HashMap<PowerPlant, Double>();
+    public Map<PowerPlant, Double> expectedESMOperatingRevenueMap = new HashMap<PowerPlant, Double>();
+    public Map<PowerPlant, Double> runningHoursMap = new ConcurrentHashMap<PowerPlant, Double>();
 
     @Override
     public void act(T agent) {
@@ -111,8 +113,60 @@ public class InvestmentWithCapacityMarketsRole<T extends EnergyProducer> extends
             MarketInformation marketInformation = new MarketInformation(market, expectedDemand, expectedFuelPrices,
                     expectedCO2Price.get(market).doubleValue(), futureTimePoint);
 
-            CapacityMarketInformation capacityMarketInformation = new CapacityMarketInformation(market, expectedDemand,
-                    futureTimePoint);
+            logger.warn("Hello! I am inside the electricity spot market for loop. ");
+
+            for (PowerGeneratingTechnology technology : reps.genericRepository.findAll(PowerGeneratingTechnology.class)) {
+
+                logger.warn("Hello! I am inside the FIRST power generation technology for loop . ");
+
+                PowerPlant plant = new PowerPlant();
+                plant.specifyNotPersist(getCurrentTick(), agent, getNodeForZone(market.getZone()), technology);
+
+                // CALCULATE EXPECTED NET REVENUE FROM ENERGY MARKET for every
+                // power plant
+
+                Map<Substance, Double> myFuelPrices = new HashMap<Substance, Double>();
+                for (Substance fuel : technology.getFuels()) {
+                    myFuelPrices.put(fuel, expectedFuelPrices.get(fuel));
+                }
+                Set<SubstanceShareInFuelMix> fuelMix = calculateFuelMix(plant, myFuelPrices,
+                        expectedCO2Price.get(market));
+                plant.setFuelMix(fuelMix);
+
+                double expectedMarginalCost = determineExpectedMarginalCost(plant, expectedFuelPrices,
+                        expectedCO2Price.get(market));
+                double expectedGrossProfit = 0d;
+                double runningHours = 0d;
+
+                long numberOfSegments = reps.segmentRepository.count();
+
+                for (SegmentLoad segmentLoad : market.getLoadDurationCurve()) {
+                    double expectedElectricityPrice = marketInformation.expectedElectricityPricesPerSegment
+                            .get(segmentLoad.getSegment());
+                    double hours = segmentLoad.getSegment().getLengthInHours();
+                    if (expectedMarginalCost <= expectedElectricityPrice) {
+                        runningHours += hours;
+                        expectedGrossProfit += (expectedElectricityPrice - expectedMarginalCost)
+                                * hours
+                                * plant.getAvailableCapacity(futureTimePoint, segmentLoad.getSegment(),
+                                        numberOfSegments);
+                    }
+                }
+
+                double fixedOMCost = calculateFixedOperatingCost(plant);
+                double operatingProfitWithoutCapacityRevenue = expectedGrossProfit - fixedOMCost;
+                putOperatingProfitESM(plant, operatingProfitWithoutCapacityRevenue);
+                putRunningHours(plant, runningHours);
+
+                // logger.warn("Hash map key " + plant.getName());
+                // logger.warn("Hash map get value for key " +
+                // expectedESMOperatingRevenueMap.get(plant));
+                logger.warn("Hash map get value for running hours" + runningHoursMap.get(plant));
+
+                // END CALCULATION OF NET REVENUE FROM esm
+
+            }
+
             /*
              * if (marketInfoMap.containsKey(market) &&
              * marketInfoMap.get(market).time == futureTimePoint) {
@@ -131,10 +185,13 @@ public class InvestmentWithCapacityMarketsRole<T extends EnergyProducer> extends
 
             for (PowerGeneratingTechnology technology : reps.genericRepository.findAll(PowerGeneratingTechnology.class)) {
 
+                logger.warn("Hello! I am inside the SECOND power generation technology for loop (for INVESTMNT). ");
+
                 PowerPlant plant = new PowerPlant();
                 plant.specifyNotPersist(getCurrentTick(), agent, getNodeForZone(market.getZone()), technology);
                 // if too much capacity of this technology in the pipeline (not
                 // limited to the 5 years)
+
                 double expectedInstalledCapacityOfTechnology = reps.powerPlantRepository
                         .calculateCapacityOfExpectedOperationalPowerPlantsInMarketAndTechnology(market, technology,
                                 futureTimePoint);
@@ -189,66 +246,32 @@ public class InvestmentWithCapacityMarketsRole<T extends EnergyProducer> extends
                     // logger.warn(agent +
                     // " will not invest in {} technology as he does not have enough money for downpayment",
                     // technology);
-                } else {
+                } else
 
-                    Map<Substance, Double> myFuelPrices = new HashMap<Substance, Double>();
-                    for (Substance fuel : technology.getFuels()) {
-                        myFuelPrices.put(fuel, expectedFuelPrices.get(fuel));
-                    }
-                    Set<SubstanceShareInFuelMix> fuelMix = calculateFuelMix(plant, myFuelPrices,
-                            expectedCO2Price.get(market));
-                    plant.setFuelMix(fuelMix);
+                {
 
-                    double expectedMarginalCost = determineExpectedMarginalCost(plant, expectedFuelPrices,
-                            expectedCO2Price.get(market));
-                    double runningHours = 0d;
-                    double expectedGrossProfit = 0d;
-
-                    // logger.warn("Agent {}  found that the installed capacity in the market {} in future to be "
-                    // + marketInformation.capacitySum +
-                    // "and expectde maximum demand to be " +
-                    // marketInformation.maxExpectedLoad, agent, market);
-                    long numberOfSegments = reps.segmentRepository.count();
-
-                    // TODO somehow the prices of long-term contracts could also
-                    // be used here to determine the expected profit. Maybe not
-                    // though...
-                    for (SegmentLoad segmentLoad : market.getLoadDurationCurve()) {
-                        double expectedElectricityPrice = marketInformation.expectedElectricityPricesPerSegment
-                                .get(segmentLoad.getSegment());
-                        double hours = segmentLoad.getSegment().getLengthInHours();
-                        if (expectedMarginalCost <= expectedElectricityPrice) {
-                            runningHours += hours;
-                            expectedGrossProfit += (expectedElectricityPrice - expectedMarginalCost)
-                                    * hours
-                                    * plant.getAvailableCapacity(futureTimePoint, segmentLoad.getSegment(),
-                                            numberOfSegments);
-                        }
-                    }
-
-                    // logger.warn(agent +
-                    // "expects technology {} to have {} running", technology,
-                    // runningHours);
-                    // expect to meet minimum running hours?
-                    if (runningHours < plant.getTechnology().getMinimumRunningHours()) {
+                    if (getRunningHours(plant) < plant.getTechnology().getMinimumRunningHours()) {
                         // logger.warn(agent
-                        // +
                         // " will not invest in {} technology as he expect to have {} running, which is lower then required",
                         // technology, runningHours);
                     } else {
 
-                        double fixedOMCost = calculateFixedOperatingCost(plant);// /
-                                                                                // plant.getActualNominalCapacity();
+                        Zone zoneTemp = market.getZone();
+                        Regulator regulator = reps.regulatorRepository.findRegulatorForZone(zoneTemp);
+
                         double capacityRevenue = 0d;
-                        if (agent.isSimpleCapacityMarketEnabled()) {
+                        if ((agent.isSimpleCapacityMarketEnabled()) && (regulator != null)) {
+
+                            CapacityMarketInformation capacityMarketInformation = new CapacityMarketInformation(market,
+                                    expectedDemand, futureTimePoint);
+
                             capacityRevenue = capacityMarketInformation.expectedCapacityMarketPrice;
                         } else {
                             capacityRevenue = 0;
                         }
 
-                        double operatingProfit = expectedGrossProfit - fixedOMCost + capacityRevenue;
+                        double operatingProfit = expectedESMOperatingRevenueMap.get(plant) + capacityRevenue;
 
-                        putOperatingProfitESM(plant, operatingProfit);
                         // TODO Alter discount rate on the basis of the amount
                         // in long-term contracts?
                         // TODO Alter discount rate on the basis of other stuff,
@@ -270,8 +293,8 @@ public class InvestmentWithCapacityMarketsRole<T extends EnergyProducer> extends
                                 technology.getDepreciationTime(), (int) plant.getActualLeadtime(), 0, operatingProfit);
 
                         double discountedCapitalCosts = npv(discountedProjectCapitalOutflow, wacc);// are
-                                                                                                   // defined
-                                                                                                   // negative!!
+                        // defined
+                        // negative!!
                         // plant.getActualNominalCapacity();
 
                         // logger.warn("Agent {}  found that the discounted capital for technology {} to be "
@@ -310,6 +333,9 @@ public class InvestmentWithCapacityMarketsRole<T extends EnergyProducer> extends
                         if (projectValue > 0 && projectValue / plant.getActualNominalCapacity() > highestValue) {
                             highestValue = projectValue / plant.getActualNominalCapacity();
                             bestTechnology = plant.getTechnology();
+
+                            // logger.warn("Best Technology is "
+                            // +plant.getName());
                         }
                     }
 
@@ -317,8 +343,7 @@ public class InvestmentWithCapacityMarketsRole<T extends EnergyProducer> extends
             }
 
             if (bestTechnology != null) {
-                // logger.warn("Agent {} invested in technology {} at tick " +
-                // getCurrentTick(), agent, bestTechnology);
+                logger.warn("Agent {} invested in technology {} at tick " + getCurrentTick(), agent, bestTechnology);
 
                 PowerPlant plant = new PowerPlant();
                 plant.specifyAndPersist(getCurrentTick(), agent, getNodeForZone(market.getZone()), bestTechnology);
@@ -368,12 +393,27 @@ public class InvestmentWithCapacityMarketsRole<T extends EnergyProducer> extends
 
     // stores expected gross profit for a power plant for a tick
     public void putOperatingProfitESM(PowerPlant plant, double revenue) {
+        logger.warn("Putting Operating Profit ESM of" + revenue);
         expectedESMOperatingRevenueMap.put(plant, revenue);
+
     }
 
     // returns expected gross profit for a power plant for a tick
     public double getOperatingProfit(PowerPlant plant) {
+        logger.warn("Trying to get operating Profit ESM of" + plant.getName());
         return expectedESMOperatingRevenueMap.get(plant);
+    }
+
+    // stores running hours for a power plant for a tick
+    public void putRunningHours(PowerPlant plant, Double hours) {
+        logger.warn("Store Running hours of {} for plant" + plant.getName(), hours);
+        runningHoursMap.put(plant, hours);
+    }
+
+    // returns running hours for a power plant for a tick
+    public double getRunningHours(PowerPlant plant) {
+        logger.warn("Trying to get Running hours for plant " + plant.getName());
+        return runningHoursMap.get(plant);
     }
 
     /**
@@ -487,10 +527,16 @@ public class InvestmentWithCapacityMarketsRole<T extends EnergyProducer> extends
             for (SegmentLoad segmentLoad : market.getLoadDurationCurve()) {
                 if (segmentLoad.getBaseLoad() > peakSegmentLoad) {
                     peakSegmentLoad = segmentLoad.getBaseLoad();
+
                 }
             }
-            expectedCMDemandTarget = reps.capacityMarketRepository.findRegulatorForZone(zone).getReserveMargin()
-                    * peakSegmentLoad * demandFactor;
+
+            logger.warn("Capacity Market Information");
+            logger.warn("The Regulator is " + reps.regulatorRepository.findRegulatorForZone(zone));
+            logger.warn("Peak Segment Load is " + peakSegmentLoad);
+            logger.warn("Demand Factor is " + demandFactor);
+
+            expectedCMDemandTarget = regulator.getReserveMargin() * peakSegmentLoad * demandFactor;
 
             // get merit order for this market
             double marginalCostCapacity = 0d;

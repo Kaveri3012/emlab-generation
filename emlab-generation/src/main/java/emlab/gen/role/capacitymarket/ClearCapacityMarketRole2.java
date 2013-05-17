@@ -24,7 +24,7 @@ import agentspring.role.Role;
 import agentspring.role.RoleComponent;
 import emlab.gen.domain.agent.Regulator;
 import emlab.gen.domain.market.Bid;
-import emlab.gen.domain.market.capacity.CapacityClearingPoint;
+import emlab.gen.domain.market.ClearingPoint;
 import emlab.gen.domain.market.capacity.CapacityDispatchPlan;
 import emlab.gen.domain.market.capacity.CapacityMarket;
 import emlab.gen.repository.Reps;
@@ -35,7 +35,7 @@ import emlab.gen.repository.Reps;
  */
 
 @RoleComponent
-public class ClearCapacityMarketRole extends AbstractRole<Regulator> implements Role<Regulator> {
+public class ClearCapacityMarketRole2 extends AbstractRole<Regulator> implements Role<Regulator> {
 
     // CapacityMarketRepository capacityMarketRepository;
 
@@ -118,16 +118,18 @@ public class ClearCapacityMarketRole extends AbstractRole<Regulator> implements 
             }
         }
 
-        CapacityClearingPoint clearingPoint = new CapacityClearingPoint();
         if (isTheMarketCleared == true) {
             // sumofSupplyBidsAccepted = demand;
             logger.warn("accepted price at the clearing point, with the market cleared" + acceptedPrice);
-            clearingPoint.setPrice(acceptedPrice);
-            clearingPoint.setVolume(sumofSupplyBidsAccepted);
-            clearingPoint.setTime(getCurrentTick());
-            clearingPoint.setCapacityMarket(market);
-            clearingPoint.persist();
 
+            ClearingPoint clearingPoint = reps.clearingPointRepositoryOld.createOrUpdateClearingPoint(market,
+                    acceptedPrice, sumofSupplyBidsAccepted, getCurrentTick());
+            /*
+             * clearingPoint.setPrice(acceptedPrice);
+             * clearingPoint.setVolume(sumofSupplyBidsAccepted);
+             * clearingPoint.setTime(getCurrentTick());
+             * clearingPoint.setCapacityMarket(market); clearingPoint.persist();
+             */
             logger.warn("Clearing point Price" + clearingPoint.getPrice());
             logger.warn("Clearing Point Volume" + clearingPoint.getVolume());
         } else {
@@ -135,17 +137,24 @@ public class ClearCapacityMarketRole extends AbstractRole<Regulator> implements 
                     * (1 + ((regulator.getDemandTarget() * (1 - regulator.getReserveDemandLowerMargin()) - sumofSupplyBidsAccepted) / ((regulator
                             .getReserveDemandUpperMargin() + regulator.getReserveDemandLowerMargin()) * regulator
                             .getDemandTarget())));
-            clearingPoint.setPrice(max(regulator.getCapacityMarketPriceCap(), acceptedPrice));
-            clearingPoint.setVolume(sumofSupplyBidsAccepted);
-            clearingPoint.setTime(getCurrentTick());
-            clearingPoint.setCapacityMarket(market);
-            clearingPoint.persist();
-            logger.warn("accepted price at the clearing point with market uncleared" + acceptedPrice);
 
+            double toSetPrice = max(acceptedPrice, regulator.getCapacityMarketPriceCap());
+            ClearingPoint clearingPoint = reps.clearingPointRepositoryOld.createOrUpdateClearingPoint(market,
+                    toSetPrice, sumofSupplyBidsAccepted, getCurrentTick());
+
+            /*
+             * clearingPoint.setPrice(max(regulator.getCapacityMarketPriceCap(),
+             * acceptedPrice));
+             * clearingPoint.setVolume(sumofSupplyBidsAccepted);
+             * clearingPoint.setTime(getCurrentTick());
+             * clearingPoint.setCapacityMarket(market); clearingPoint.persist();
+             */
+            logger.warn("accepted price at the clearing point with market uncleared" + acceptedPrice);
+            logger.warn("Clearing point Price" + clearingPoint.getPrice());
         }
         // clearingPoint.persist();
         // logger.warn("is the market cleared? " + isTheMarketCleared);
-        // logger.warn("Clearing point Price" + clearingPoint.getPrice());
+
         // logger.warn("Clearing Point Volume" + clearingPoint.getVolume());
     }
 

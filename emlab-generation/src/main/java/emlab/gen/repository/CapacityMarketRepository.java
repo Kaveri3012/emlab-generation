@@ -22,6 +22,7 @@ import org.springframework.data.repository.query.Param;
 
 import emlab.gen.domain.agent.Regulator;
 import emlab.gen.domain.gis.Zone;
+import emlab.gen.domain.market.ClearingPoint;
 import emlab.gen.domain.market.capacity.CapacityClearingPoint;
 import emlab.gen.domain.market.capacity.CapacityDispatchPlan;
 import emlab.gen.domain.market.capacity.CapacityMarket;
@@ -44,6 +45,10 @@ public interface CapacityMarketRepository extends GraphRepository<CapacityMarket
 
     @Query(value = "g.v(market).in('CAPACITY_MARKET').propertyFilter('time', FilterPipe.Filter.EQUAL, time)", type = QueryType.Gremlin)
     public CapacityClearingPoint findOneCapacityClearingPointForTimeAndMarket(@Param("time") long time,
+            @Param("market") CapacityMarket capacityMarket);
+
+    @Query(value = "g.v(market).in('CAPACITY_MARKET').propertyFilter('time', FilterPipe.Filter.EQUAL, time)", type = QueryType.Gremlin)
+    public ClearingPoint findOneClearingPointForTimeAndCapacityMarket(@Param("time") long time,
             @Param("market") CapacityMarket capacityMarket);
 
     @Query(value = "g.idx('__types__')[[className:'emlab.gen.domain.market.capacity.CapacityClearingPoint']].filter{it.time == tick}", type = QueryType.Gremlin)

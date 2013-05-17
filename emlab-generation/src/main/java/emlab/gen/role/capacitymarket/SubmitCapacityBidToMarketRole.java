@@ -80,9 +80,9 @@ public class SubmitCapacityBidToMarketRole extends AbstractEnergyProducerRole<En
             double electricityMarketRevenue = 0d;
             // double runningHours = 0d;
 
-            double mc = calculateMarginalCostExclCO2MarketCost(plant);
+            // double mc = calculateMarginalCostExclCO2MarketCost(plant);
             double expectedElectricityPrice = 0;
-            // double mc = 0;
+            double mc = 0;
             for (SegmentLoad segmentLoad : eMarket.getLoadDurationCurve()) {
 
                 if (getCurrentTick() == 0) {

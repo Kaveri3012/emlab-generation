@@ -92,4 +92,10 @@ public class Reps {
     @Autowired
     public ZoneRepository zoneRepository;
 
+    @Autowired
+    public RegulatorRepository regulatorRepository;
+
+    @Autowired
+    public CapacityDispatchPlanRepository capacityDispatchPlanRepository;
+
 }
