@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
@@ -78,8 +77,8 @@ public class InvestmentWithCapacityMarketsRole<T extends EnergyProducer> extends
     @Transient
     Map<ElectricitySpotMarket, MarketInformation> marketInfoMap = new HashMap<ElectricitySpotMarket, MarketInformation>();
 
-    public Map<PowerPlant, Double> expectedESMOperatingRevenueMap = new HashMap<PowerPlant, Double>();
-    public Map<PowerPlant, Double> runningHoursMap = new ConcurrentHashMap<PowerPlant, Double>();
+    Map<PowerPlant, Double> expectedESMOperatingRevenueMap = new HashMap<PowerPlant, Double>();
+    Map<PowerPlant, Double> runningHoursMap = new HashMap<PowerPlant, Double>();
 
     @Override
     public void act(T agent) {
