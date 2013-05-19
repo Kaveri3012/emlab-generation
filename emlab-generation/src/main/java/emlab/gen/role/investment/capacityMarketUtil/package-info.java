@@ -17,4 +17,4 @@
  * @author Kaveri
  * Contains classes for objects that are only needed for auxiliary support in the InvestmentWithCapacityMarketsRole
  */
-package emlab.gen.domain.market.capacityUtil;
+package emlab.gen.role.investment.capacityMarketUtil;

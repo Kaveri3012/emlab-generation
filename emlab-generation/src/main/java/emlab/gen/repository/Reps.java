@@ -98,4 +98,7 @@ public class Reps {
     @Autowired
     public CapacityDispatchPlanRepository capacityDispatchPlanRepository;
 
+    @Autowired
+    public CapacityMarketUtilRepository capacityMarketUtilRepository;
+
 }

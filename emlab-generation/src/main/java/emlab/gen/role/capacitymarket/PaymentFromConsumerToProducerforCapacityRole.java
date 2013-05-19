@@ -49,8 +49,8 @@ public class PaymentFromConsumerToProducerforCapacityRole extends AbstractMarket
         for (CapacityDispatchPlan plan : reps.capacityMarketRepository.findAllAcceptedCapacityDispatchPlansForTime(
                 capacityMarket, getCurrentTick())) {
 
-            ClearingPoint capacityClearingPoint = reps.capacityMarketRepository
-                    .findOneClearingPointForTimeAndCapacityMarket(getCurrentTick(), capacityMarket);
+            ClearingPoint capacityClearingPoint = reps.clearingPointRepository.findClearingPointForMarketAndTime(
+                    capacityMarket, getCurrentTick());
 
             // double price = capacityClearingPoint.getPrice();
             logger.warn("consumer is " + capacityMarket.getConsumer().getName());

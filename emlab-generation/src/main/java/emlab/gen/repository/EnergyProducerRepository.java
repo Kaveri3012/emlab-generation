@@ -25,13 +25,12 @@ import emlab.gen.domain.agent.EnergyProducer;
 
 /**
  * @author JCRichstein
- *
+ * 
  */
-public interface EnergyProducerRepository extends
-		GraphRepository<EnergyProducer> {
-	
-	@Query(value="result = g.idx('__types__')[[className:'emlab.gen.domain.agent.EnergyProducer']].propertyFilter('__type__', FilterPipe.Filter.NOT_EQUAL, 'emlab.gen.domain.agent.TargetInvestor').toList();" +
-			"if(result == null){return null;} else {Collections.shuffle(result); return result;}", type=QueryType.Gremlin)
-	List<EnergyProducer> findAllEnergyProducersExceptForRenewableTargetInvestorsAtRandom();
-	
+public interface EnergyProducerRepository extends GraphRepository<EnergyProducer> {
+
+    @Query(value = "result = g.idx('__types__')[[className:'emlab.gen.domain.agent.EnergyProducer']].propertyFilter('__type__', FilterPipe.Filter.NOT_EQUAL, 'emlab.gen.domain.agent.TargetInvestor').toList();"
+            + "if(result == null){return null;} else {Collections.shuffle(result); return result;}", type = QueryType.Gremlin)
+    List<EnergyProducer> findAllEnergyProducersExceptForRenewableTargetInvestorsAtRandom();
+
 }

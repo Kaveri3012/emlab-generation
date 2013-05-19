@@ -24,6 +24,7 @@ import agentspring.role.Role;
 import agentspring.role.RoleComponent;
 import emlab.gen.domain.agent.Regulator;
 import emlab.gen.domain.market.Bid;
+import emlab.gen.domain.market.ClearingPoint;
 import emlab.gen.domain.market.capacity.CapacityClearingPoint;
 import emlab.gen.domain.market.capacity.CapacityDispatchPlan;
 import emlab.gen.domain.market.capacity.CapacityMarket;
@@ -118,14 +119,14 @@ public class ClearCapacityMarketRole extends AbstractRole<Regulator> implements 
             }
         }
 
-        CapacityClearingPoint clearingPoint = new CapacityClearingPoint();
+        ClearingPoint clearingPoint = new CapacityClearingPoint();
         if (isTheMarketCleared == true) {
             // sumofSupplyBidsAccepted = demand;
             logger.warn("accepted price at the clearing point, with the market cleared" + acceptedPrice);
             clearingPoint.setPrice(acceptedPrice);
             clearingPoint.setVolume(sumofSupplyBidsAccepted);
             clearingPoint.setTime(getCurrentTick());
-            clearingPoint.setCapacityMarket(market);
+            clearingPoint.setAbstractMarket(market);
             clearingPoint.persist();
 
             logger.warn("Clearing point Price" + clearingPoint.getPrice());
@@ -138,7 +139,8 @@ public class ClearCapacityMarketRole extends AbstractRole<Regulator> implements 
             clearingPoint.setPrice(max(regulator.getCapacityMarketPriceCap(), acceptedPrice));
             clearingPoint.setVolume(sumofSupplyBidsAccepted);
             clearingPoint.setTime(getCurrentTick());
-            clearingPoint.setCapacityMarket(market);
+            // clearingPoint.setCapacityMarket(market);
+            clearingPoint.setAbstractMarket(market);
             clearingPoint.persist();
             logger.warn("accepted price at the clearing point with market uncleared" + acceptedPrice);
 

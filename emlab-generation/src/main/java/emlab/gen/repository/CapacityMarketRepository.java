@@ -43,7 +43,7 @@ public interface CapacityMarketRepository extends GraphRepository<CapacityMarket
     public Iterable<CapacityDispatchPlan> findAllAcceptedCapacityDispatchPlansForTime(
             @Param("market") CapacityMarket capacityMarket, @Param("time") long time);
 
-    @Query(value = "g.v(market).in('CAPACITY_MARKET').propertyFilter('time', FilterPipe.Filter.EQUAL, time)", type = QueryType.Gremlin)
+    @Query(value = "g.v(market).in('CAPACITY_MARKET').filter{it.time==tick}", type = QueryType.Gremlin)
     public CapacityClearingPoint findOneCapacityClearingPointForTimeAndMarket(@Param("time") long time,
             @Param("market") CapacityMarket capacityMarket);
 

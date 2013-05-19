@@ -49,6 +49,7 @@ import emlab.gen.domain.technology.PowerPlant;
 import emlab.gen.domain.technology.Substance;
 import emlab.gen.domain.technology.SubstanceShareInFuelMix;
 import emlab.gen.repository.Reps;
+import emlab.gen.role.investment.capacityMarketUtil.CapacityMarketUtil;
 import emlab.gen.util.GeometricTrendRegression;
 import emlab.gen.util.MapValueComparator;
 
@@ -76,9 +77,6 @@ public class InvestmentWithCapacityMarketsRole<T extends EnergyProducer> extends
     // market expectations
     @Transient
     Map<ElectricitySpotMarket, MarketInformation> marketInfoMap = new HashMap<ElectricitySpotMarket, MarketInformation>();
-
-    Map<PowerPlant, Double> expectedESMOperatingRevenueMap = new HashMap<PowerPlant, Double>();
-    Map<PowerPlant, Double> runningHoursMap = new HashMap<PowerPlant, Double>();
 
     @Override
     public void act(T agent) {
@@ -154,13 +152,27 @@ public class InvestmentWithCapacityMarketsRole<T extends EnergyProducer> extends
 
                 double fixedOMCost = calculateFixedOperatingCost(plant);
                 double operatingProfitWithoutCapacityRevenue = expectedGrossProfit - fixedOMCost;
-                putOperatingProfitESM(plant, operatingProfitWithoutCapacityRevenue);
-                putRunningHours(plant, runningHours);
+
+                CapacityMarketUtil cMUtil = new CapacityMarketUtil();
+                cMUtil.setOperatingRevenue(operatingProfitWithoutCapacityRevenue);
+                logger.warn("Op Rev" + operatingProfitWithoutCapacityRevenue);
+                cMUtil.setRunningHours(runningHours);
+                logger.warn("RunningHours" + runningHours);
+                cMUtil.setPlant(plant);
+                logger.warn("Plant is " + plant.getName());
+                cMUtil.setProducer(agent);
+                logger.warn("EP is " + agent.getName());
+                cMUtil.setTick(getCurrentTick());
+                logger.warn("tick is " + getCurrentTick());
+                cMUtil.persist();
+
+                // cMUtil.specifyAndPersist(operatingProfitWithoutCapacityRevenue,
+                // runningHours, getCurrentTick(), agent,
+                // plant);
 
                 // logger.warn("Hash map key " + plant.getName());
                 // logger.warn("Hash map get value for key " +
                 // expectedESMOperatingRevenueMap.get(plant));
-                logger.warn("Hash map get value for running hours" + runningHoursMap.get(plant));
 
                 // END CALCULATION OF NET REVENUE FROM esm
 
@@ -248,8 +260,15 @@ public class InvestmentWithCapacityMarketsRole<T extends EnergyProducer> extends
                 } else
 
                 {
+                    double runningHours = reps.capacityMarketUtilRepository
+                            .findCapacityMarketUtilByEnergyProducerAndTechnologyAndTick(plant.getName(),
+                                    getCurrentTick()).getRunningHours();
 
-                    if (getRunningHours(plant) < plant.getTechnology().getMinimumRunningHours()) {
+                    double operatingRevenueWithoutCapacityMarketRevenue = reps.capacityMarketUtilRepository
+                            .findCapacityMarketUtilByEnergyProducerAndTechnologyAndTick(plant.getName(),
+                                    getCurrentTick()).getOperatingRevenue();
+
+                    if (runningHours < plant.getTechnology().getMinimumRunningHours()) {
                         // logger.warn(agent
                         // " will not invest in {} technology as he expect to have {} running, which is lower then required",
                         // technology, runningHours);
@@ -269,7 +288,7 @@ public class InvestmentWithCapacityMarketsRole<T extends EnergyProducer> extends
                             capacityRevenue = 0;
                         }
 
-                        double operatingProfit = expectedESMOperatingRevenueMap.get(plant) + capacityRevenue;
+                        double operatingProfit = operatingRevenueWithoutCapacityMarketRevenue + capacityRevenue;
 
                         // TODO Alter discount rate on the basis of the amount
                         // in long-term contracts?
@@ -390,31 +409,6 @@ public class InvestmentWithCapacityMarketsRole<T extends EnergyProducer> extends
         agent.setWillingToInvest(false);
     }
 
-    // stores expected gross profit for a power plant for a tick
-    public void putOperatingProfitESM(PowerPlant plant, double revenue) {
-        logger.warn("Putting Operating Profit ESM of" + revenue);
-        expectedESMOperatingRevenueMap.put(plant, revenue);
-
-    }
-
-    // returns expected gross profit for a power plant for a tick
-    public double getOperatingProfit(PowerPlant plant) {
-        logger.warn("Trying to get operating Profit ESM of" + plant.getName());
-        return expectedESMOperatingRevenueMap.get(plant);
-    }
-
-    // stores running hours for a power plant for a tick
-    public void putRunningHours(PowerPlant plant, Double hours) {
-        logger.warn("Store Running hours of {} for plant" + plant.getName(), hours);
-        runningHoursMap.put(plant, hours);
-    }
-
-    // returns running hours for a power plant for a tick
-    public double getRunningHours(PowerPlant plant) {
-        logger.warn("Trying to get Running hours for plant " + plant.getName());
-        return runningHoursMap.get(plant);
-    }
-
     /**
      * Predicts fuel prices for {@link futureTimePoint} using a geometric trend
      * regression forecast. Only predicts fuels that are traded on a commodity
@@ -522,6 +516,7 @@ public class InvestmentWithCapacityMarketsRole<T extends EnergyProducer> extends
             double supply = 0d;
             double capacityPrice = 0d;
             Regulator regulator = reps.capacityMarketRepository.findRegulatorForZone(zone);
+            expectedCMDemandTarget = regulator.getReserveMargin() * peakSegmentLoad * demandFactor;
             // calculate expected demand for Capacity Market
             for (SegmentLoad segmentLoad : market.getLoadDurationCurve()) {
                 if (segmentLoad.getBaseLoad() > peakSegmentLoad) {
@@ -535,16 +530,19 @@ public class InvestmentWithCapacityMarketsRole<T extends EnergyProducer> extends
             logger.warn("Peak Segment Load is " + peakSegmentLoad);
             logger.warn("Demand Factor is " + demandFactor);
 
-            expectedCMDemandTarget = regulator.getReserveMargin() * peakSegmentLoad * demandFactor;
-
             // get merit order for this market
             double marginalCostCapacity = 0d;
             for (PowerPlant plant : reps.powerPlantRepository.findExpectedOperationalPowerPlantsInMarket(market,
                     futureTimePoint)) {
-                if (getOperatingProfit(plant) >= 0)
+
+                double operatingRevenue = reps.capacityMarketUtilRepository
+                        .findCapacityMarketUtilByEnergyProducerAndTechnologyAndTick(plant.getName(), getCurrentTick())
+                        .getOperatingRevenue();
+
+                if (operatingRevenue >= 0)
                     marginalCostCapacity = 0;
                 else
-                    marginalCostCapacity = -getOperatingProfit(plant);
+                    marginalCostCapacity = -operatingRevenue;
                 marginalCMCostMap.put(plant, marginalCostCapacity);
                 capacitySum += plant.getActualNominalCapacity();
             }
@@ -569,9 +567,13 @@ public class InvestmentWithCapacityMarketsRole<T extends EnergyProducer> extends
                                             .getReserveDemandLowerMargin()) * expectedCMDemandTarget)
                             / regulator.getCapacityMarketPriceCap();
 
+                    double operatingRevenue = reps.capacityMarketUtilRepository
+                            .findCapacityMarketUtilByEnergyProducerAndTechnologyAndTick(plant.getName(),
+                                    getCurrentTick()).getOperatingRevenue();
+
                     if (supply < expectedCMDemand) {
                         supply += plantCapacity;
-                        capacityPrice = -getOperatingProfit(plant);
+                        capacityPrice = -operatingRevenue;
                     }
 
                 }
