@@ -77,8 +77,11 @@ public class InvestmentWithCapacityMarketsRole<T extends EnergyProducer> extends
     @Transient
     Map<ElectricitySpotMarket, MarketInformation> marketInfoMap = new HashMap<ElectricitySpotMarket, MarketInformation>();
 
-    Map<PowerPlant, Double> expectedESMOperatingRevenueMap = new HashMap<PowerPlant, Double>();
-    Map<PowerPlant, Double> runningHoursMap = new HashMap<PowerPlant, Double>();
+    @Transient
+    Map<String, Double> expectedESMOperatingRevenueMap = new HashMap<String, Double>();
+
+    @Transient
+    Map<String, Double> runningHoursMap = new HashMap<String, Double>();
 
     @Override
     public void act(T agent) {
@@ -154,8 +157,8 @@ public class InvestmentWithCapacityMarketsRole<T extends EnergyProducer> extends
 
                 double fixedOMCost = calculateFixedOperatingCost(plant);
                 double operatingProfitWithoutCapacityRevenue = expectedGrossProfit - fixedOMCost;
-                putOperatingProfitESM(plant, operatingProfitWithoutCapacityRevenue);
-                putRunningHours(plant, runningHours);
+                putOperatingProfitESM(plant.getName(), operatingProfitWithoutCapacityRevenue);
+                putRunningHours(plant.getName(), runningHours);
 
                 // logger.warn("Hash map key " + plant.getName());
                 // logger.warn("Hash map get value for key " +
@@ -249,7 +252,7 @@ public class InvestmentWithCapacityMarketsRole<T extends EnergyProducer> extends
 
                 {
 
-                    if (getRunningHours(plant) < plant.getTechnology().getMinimumRunningHours()) {
+                    if (getRunningHours(plant.getName()) < plant.getTechnology().getMinimumRunningHours()) {
                         // logger.warn(agent
                         // " will not invest in {} technology as he expect to have {} running, which is lower then required",
                         // technology, runningHours);
@@ -269,7 +272,7 @@ public class InvestmentWithCapacityMarketsRole<T extends EnergyProducer> extends
                             capacityRevenue = 0;
                         }
 
-                        double operatingProfit = expectedESMOperatingRevenueMap.get(plant) + capacityRevenue;
+                        double operatingProfit = getOperatingProfit(plant.getName()) + capacityRevenue;
 
                         // TODO Alter discount rate on the basis of the amount
                         // in long-term contracts?
@@ -391,28 +394,28 @@ public class InvestmentWithCapacityMarketsRole<T extends EnergyProducer> extends
     }
 
     // stores expected gross profit for a power plant for a tick
-    public void putOperatingProfitESM(PowerPlant plant, double revenue) {
+    public void putOperatingProfitESM(String plantName, double revenue) {
         logger.warn("Putting Operating Profit ESM of" + revenue);
-        expectedESMOperatingRevenueMap.put(plant, revenue);
+        expectedESMOperatingRevenueMap.put(plantName, revenue);
 
     }
 
     // returns expected gross profit for a power plant for a tick
-    public double getOperatingProfit(PowerPlant plant) {
-        logger.warn("Trying to get operating Profit ESM of" + plant.getName());
-        return expectedESMOperatingRevenueMap.get(plant);
+    public double getOperatingProfit(String plantName) {
+        logger.warn("Trying to get operating Profit ESM of" + plantName);
+        return expectedESMOperatingRevenueMap.get(plantName);
     }
 
     // stores running hours for a power plant for a tick
-    public void putRunningHours(PowerPlant plant, Double hours) {
-        logger.warn("Store Running hours of {} for plant" + plant.getName(), hours);
-        runningHoursMap.put(plant, hours);
+    public void putRunningHours(String plantName, Double hours) {
+        logger.warn("Store Running hours of {} for plant" + plantName, hours);
+        runningHoursMap.put(plantName, hours);
     }
 
     // returns running hours for a power plant for a tick
-    public double getRunningHours(PowerPlant plant) {
-        logger.warn("Trying to get Running hours for plant " + plant.getName());
-        return runningHoursMap.get(plant);
+    public double getRunningHours(String plantName) {
+        logger.warn("Trying to get Running hours for plant " + plantName);
+        return runningHoursMap.get(plantName);
     }
 
     /**
@@ -541,10 +544,10 @@ public class InvestmentWithCapacityMarketsRole<T extends EnergyProducer> extends
             double marginalCostCapacity = 0d;
             for (PowerPlant plant : reps.powerPlantRepository.findExpectedOperationalPowerPlantsInMarket(market,
                     futureTimePoint)) {
-                if (getOperatingProfit(plant) >= 0)
+                if (getOperatingProfit(plant.getName()) >= 0)
                     marginalCostCapacity = 0;
                 else
-                    marginalCostCapacity = -getOperatingProfit(plant);
+                    marginalCostCapacity = -getOperatingProfit(plant.getName());
                 marginalCMCostMap.put(plant, marginalCostCapacity);
                 capacitySum += plant.getActualNominalCapacity();
             }
@@ -571,7 +574,7 @@ public class InvestmentWithCapacityMarketsRole<T extends EnergyProducer> extends
 
                     if (supply < expectedCMDemand) {
                         supply += plantCapacity;
-                        capacityPrice = -getOperatingProfit(plant);
+                        capacityPrice = -getOperatingProfit(plant.getName());
                     }
 
                 }
