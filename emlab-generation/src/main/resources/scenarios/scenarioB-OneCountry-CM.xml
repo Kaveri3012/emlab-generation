@@ -387,7 +387,7 @@
 		<property name="investorMarket" ref="beneluxElectricitySpotMarket" />
 		</bean>
 
-	<bean id="standardInvestmentRole" class="emlab.gen.role.investment.InvestmentWithCapacityMarket2"/>
+	<bean id="standardInvestmentRole" class="emlab.gen.role.investment.InvestInPowerGenerationTechnologiesRole"/>
 
 	<!-- PowerGenerationTechnology Node Limits -->
 
@@ -836,7 +836,7 @@
 	<!-- Parameter file -->
 	<bean id="projectPropertyConfigurer"
 		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-		<property name="location" value="classpath:scenarios/parametersB-OneCountry-CapacityMarket.properties" />
+		<property name="location" value="classpath:scenarios/parametersB-OneCountry-CM.properties" />
 	</bean>
 
 </beans>

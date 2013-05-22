@@ -70,11 +70,5 @@ public class PaymentFromConsumerToProducerforCapacityRole extends AbstractMarket
      * 
      * @see emlab.gen.role.market.AbstractMarketRole#getReps()
      */
-    @Override
-    public Reps getReps() {
-
-        return reps;
-
-    }
 
 }
