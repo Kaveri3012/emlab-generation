@@ -78,10 +78,10 @@ public class InvestmentWithCapacityMarketsRole<T extends EnergyProducer> extends
     Map<ElectricitySpotMarket, MarketInformation> marketInfoMap = new HashMap<ElectricitySpotMarket, MarketInformation>();
 
     @Transient
-    Map<String, Double> expectedESMOperatingRevenueMap = new HashMap<String, Double>();
+    public Map<String, Double> expectedESMOperatingRevenueMap = new HashMap<String, Double>();
 
     @Transient
-    Map<String, Double> runningHoursMap = new HashMap<String, Double>();
+    public Map<String, Double> runningHoursMap = new HashMap<String, Double>();
 
     @Override
     public void act(T agent) {
@@ -157,8 +157,11 @@ public class InvestmentWithCapacityMarketsRole<T extends EnergyProducer> extends
 
                 double fixedOMCost = calculateFixedOperatingCost(plant);
                 double operatingProfitWithoutCapacityRevenue = expectedGrossProfit - fixedOMCost;
-                putOperatingProfitESM(plant.getName(), operatingProfitWithoutCapacityRevenue);
-                putRunningHours(plant.getName(), runningHours);
+                // putOperatingProfitESM(plant.getName(),
+                // operatingProfitWithoutCapacityRevenue);
+                expectedESMOperatingRevenueMap.put(plant.getName(), operatingProfitWithoutCapacityRevenue);
+                // putRunningHours(plant.getName(), runningHours);
+                runningHoursMap.put(plant.getName(), runningHours);
 
                 // logger.warn("Hash map key " + plant.getName());
                 // logger.warn("Hash map get value for key " +
@@ -252,7 +255,7 @@ public class InvestmentWithCapacityMarketsRole<T extends EnergyProducer> extends
 
                 {
 
-                    if (getRunningHours(plant.getName()) < plant.getTechnology().getMinimumRunningHours()) {
+                    if (runningHoursMap.get(plant.getName()) < plant.getTechnology().getMinimumRunningHours()) {
                         // logger.warn(agent
                         // " will not invest in {} technology as he expect to have {} running, which is lower then required",
                         // technology, runningHours);
@@ -264,15 +267,19 @@ public class InvestmentWithCapacityMarketsRole<T extends EnergyProducer> extends
                         double capacityRevenue = 0d;
                         if ((agent.isSimpleCapacityMarketEnabled()) && (regulator != null)) {
 
-                            CapacityMarketInformation capacityMarketInformation = new CapacityMarketInformation(market,
-                                    expectedDemand, futureTimePoint);
+                            // CapacityMarketInformation
+                            // capacityMarketInformation = new
+                            // CapacityMarketInformation(market,
+                            // expectedDemand, futureTimePoint);
 
-                            capacityRevenue = capacityMarketInformation.expectedCapacityMarketPrice;
+                            // capacityRevenue =
+                            // capacityMarketInformation.expectedCapacityMarketPrice;
+
                         } else {
                             capacityRevenue = 0;
                         }
 
-                        double operatingProfit = getOperatingProfit(plant.getName()) + capacityRevenue;
+                        double operatingProfit = expectedESMOperatingRevenueMap.get(plant.getName()) + capacityRevenue;
 
                         // TODO Alter discount rate on the basis of the amount
                         // in long-term contracts?

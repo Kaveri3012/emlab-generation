@@ -33,10 +33,12 @@ import agentspring.role.Role;
 import emlab.gen.domain.agent.BigBank;
 import emlab.gen.domain.agent.EnergyProducer;
 import emlab.gen.domain.agent.PowerPlantManufacturer;
+import emlab.gen.domain.agent.Regulator;
 import emlab.gen.domain.contract.CashFlow;
 import emlab.gen.domain.contract.Loan;
 import emlab.gen.domain.gis.Zone;
 import emlab.gen.domain.market.ClearingPoint;
+import emlab.gen.domain.market.capacity.CapacityMarket;
 import emlab.gen.domain.market.electricity.ElectricitySpotMarket;
 import emlab.gen.domain.market.electricity.Segment;
 import emlab.gen.domain.market.electricity.SegmentLoad;
@@ -232,9 +234,40 @@ public class InvestInPowerGenerationTechnologiesRole<T extends EnergyProducer> e
                     } else {
 
                         double fixedOMCost = calculateFixedOperatingCost(plant);// /
-                                                                                // plant.getActualNominalCapacity();
+                        // plant.getActualNominalCapacity();
 
                         double operatingProfit = expectedGrossProfit - fixedOMCost;
+
+                        Zone zoneTemp = market.getZone();
+                        Regulator regulator = reps.regulatorRepository.findRegulatorForZone(zoneTemp);
+                        CapacityMarket cMarket = reps.capacityMarketRepository.findCapacityMarketForZone(zoneTemp);
+
+                        double capacityRevenue = 0d;
+                        double sumCapacityRevenue = 0d;
+                        if ((agent.isSimpleCapacityMarketEnabled()) && (regulator != null)) {
+
+                            // CapacityMarketInformation
+                            // capacityMarketInformation = new
+                            // CapacityMarketInformation(market,
+                            // expectedDemand, futureTimePoint);
+
+                            // capacityRevenue =
+                            // capacityMarketInformation.expectedCapacityMarketPrice;
+                            long time = 0l;
+                            for (time = getCurrentTick(); time > getCurrentTick()
+                                    - agent.getNumberOfYearsBacklookingForForecasting()
+                                    && time >= 0; time = time - 1) {
+                                double capacityRevenueTemp = reps.capacityMarketRepository
+                                        .findOneClearingPointForTimeAndCapacityMarket(time, cMarket).getPrice();
+                                sumCapacityRevenue += capacityRevenueTemp;
+                            }
+                            capacityRevenue = sumCapacityRevenue / (getCurrentTick() - time);
+
+                        } else {
+                            capacityRevenue = 0;
+                        }
+
+                        operatingProfit = operatingProfit + capacityRevenue;
 
                         // TODO Alter discount rate on the basis of the amount
                         // in long-term contracts?
@@ -257,8 +290,8 @@ public class InvestInPowerGenerationTechnologiesRole<T extends EnergyProducer> e
                                 technology.getDepreciationTime(), (int) plant.getActualLeadtime(), 0, operatingProfit);
 
                         double discountedCapitalCosts = npv(discountedProjectCapitalOutflow, wacc);// are
-                                                                                                   // defined
-                                                                                                   // negative!!
+                        // defined
+                        // negative!!
                         // plant.getActualNominalCapacity();
 
                         // logger.warn("Agent {}  found that the discounted capital for technology {} to be "
@@ -327,10 +360,7 @@ public class InvestInPowerGenerationTechnologiesRole<T extends EnergyProducer> e
                 plant.createOrUpdateLoan(loan);
 
             } else {
-                // logger.warn("{} found no suitable technology anymore to invest in at tick "
-                // + getCurrentTick(), agent);
-                // agent will not participate in the next round of investment if
-                // he does not invest now
+
                 setNotWillingToInvest(agent);
             }
         }

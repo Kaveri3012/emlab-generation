@@ -406,7 +406,7 @@
 		<property name="zone" ref="nl" />
 		</bean>
 	
-	<bean id="standardInvestmentRole" class="emlab.gen.role.investment.InvestmentWithCapacityMarketsRole"/>
+	<bean id="standardInvestmentRole" class="emlab.gen.role.investment.InvestInPowerGenerationTechnologiesRole"/>
 
 	<bean id="powerPlantManufacturer" class="emlab.gen.domain.agent.PowerPlantManufacturer"
 		p:name="Power Plant Manufacturer" />
