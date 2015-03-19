@@ -235,6 +235,38 @@ public class PowerPlant {
         }
     }
 
+    public double getCapacityFactorForSegment(Segment segment, long numberOfSegments) {
+        if (this.getTechnology().isIntermittent()) {
+            IntermittentTechnologyNodeLoadFactor intermittentTechnologyNodeLoadFactor = getIntermittentTechnologyNodeLoadFactor();
+            double factor = intermittentTechnologyNodeLoadFactor.getLoadFactorForSegment(segment);
+            return factor;
+        } else {
+            double factor = 1;
+            if (segment != null) {// if no segment supplied, assume we want
+                                  // full
+                // capacity
+                double segmentID = segment.getSegmentID();
+                if ((int) segmentID != 1) {
+
+                    double min = getTechnology().getPeakSegmentDependentAvailability();
+                    double max = getTechnology().getBaseSegmentDependentAvailability();
+                    double segmentPortion = (numberOfSegments - segmentID) / (numberOfSegments - 1); // start
+                    // counting
+                    // at
+                    // 1.
+
+                    double range = max - min;
+
+                    factor = max - segmentPortion * range;
+                    int i = 0;
+                } else {
+                    factor = getTechnology().getPeakSegmentDependentAvailability();
+                }
+            }
+            return factor;
+        }
+    }
+
     public double getAvailableCapacity(long currentTick) {
         if (isOperational(currentTick)) {
             return getActualNominalCapacity();
