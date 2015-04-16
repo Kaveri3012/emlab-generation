@@ -28,12 +28,13 @@ import emlab.gen.domain.technology.PowerGridNode;
 @NodeEntity
 public class TargetInvestor extends EnergyProducer implements Agent {
 
-    @RelatedTo(type="INVESTOR_TARGET",elementClass=PowerGeneratingTechnologyTarget.class, direction=Direction.OUTGOING)
+    @RelatedTo(type = "INVESTOR_TARGET", elementClass = PowerGeneratingTechnologyTarget.class, direction = Direction.OUTGOING)
     private Set<PowerGeneratingTechnologyTarget> powerGeneratingTechnologyTargets;
 
     @RelatedTo(type = "INVESTOR_NODE", elementClass = PowerGridNode.class, direction = Direction.OUTGOING)
     private PowerGridNode specificPowerGridNode;
 
+    private boolean isRelativeInvestor;
 
     public Set<PowerGeneratingTechnologyTarget> getPowerGenerationTechnologyTargets() {
         return powerGeneratingTechnologyTargets;
@@ -50,6 +51,14 @@ public class TargetInvestor extends EnergyProducer implements Agent {
 
     public void setSpecificPowerGridNode(PowerGridNode specificPowerGridNode) {
         this.specificPowerGridNode = specificPowerGridNode;
+    }
+
+    public boolean isRelativeInvestor() {
+        return isRelativeInvestor;
+    }
+
+    public void setRelativeInvestor(boolean isRelativeInvesor) {
+        this.isRelativeInvestor = isRelativeInvesor;
     }
 
 }
