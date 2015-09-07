@@ -86,7 +86,7 @@ public class SubmitTenderBidRole extends AbstractEnergyProducerRole<EnergyProduc
     @Override
     public void act(EnergyProducer agent) {
 
-        logger.warn("Submit Tender Bid Role started");
+        logger.warn("Submit Tender Bid Role started for " + agent);
 
         long futureTimePoint = getCurrentTick() + agent.getInvestmentFutureTimeHorizon();
         // logger.warn(agent + " looking at timepoint " + futureTimePoint);
@@ -380,12 +380,12 @@ public class SubmitTenderBidRole extends AbstractEnergyProducerRole<EnergyProduc
                             // power plants
                             // as found earlier.
 
-                            long i = 0;
+                            // long i = 0;
 
                             // logger.warn("Number of plants is " +
                             // numberOfPlants + "and iterator i is " + i);
 
-                            for (i = 1; i <= numberOfPlants; i++) {
+                            for (long i = 1; i <= numberOfPlants; i++) {
 
                                 TenderBid bid = new TenderBid().persist();
                                 bid.setAmount(totalAnnualExpectedGenerationOfPlant);
@@ -416,6 +416,7 @@ public class SubmitTenderBidRole extends AbstractEnergyProducerRole<EnergyProduc
 
         } // end for (PowerGeneratingTechnology technology :
           // reps.genericRepository.findAll(PowerGeneratingTechnology.class))
+
     }
 
     // }

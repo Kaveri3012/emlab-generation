@@ -29,7 +29,6 @@ import emlab.gen.domain.agent.EnergyConsumer;
 import emlab.gen.domain.agent.EnergyProducer;
 import emlab.gen.domain.agent.Government;
 import emlab.gen.domain.agent.StrategicReserveOperator;
-import emlab.gen.domain.agent.TargetInvestor;
 import emlab.gen.domain.market.CommodityMarket;
 import emlab.gen.domain.market.capacity.CapacityMarket;
 import emlab.gen.domain.market.electricity.ElectricitySpotMarket;
@@ -186,7 +185,9 @@ public class DecarbonizationModelRole extends AbstractRole<DecarbonizationModel>
         timerMarket.start();
         for (EnergyProducer producer : reps.genericRepository.findAllAtRandom(EnergyProducer.class)) {
             payForLoansRole.act(producer);
+
         }
+
         timerMarket.stop();
         logger.warn("        took: {} seconds.", timerMarket.seconds());
 
@@ -431,24 +432,39 @@ public class DecarbonizationModelRole extends AbstractRole<DecarbonizationModel>
         logger.warn("\t Private investment");
         if (getCurrentTick() > 1) {
             boolean someOneStillWillingToInvest = true;
+
+            int iteratorWhileLoop = 0;
+
             while (someOneStillWillingToInvest) {
                 someOneStillWillingToInvest = false;
+
                 for (EnergyProducer producer : reps.energyProducerRepository
                         .findAllEnergyProducersExceptForRenewableTargetInvestorsAtRandom()) {
                     // invest in new plants
                     if (producer.isWillingToInvest()) {
+                        logger.warn("producer.isWillingToInvest() is: " + producer.isWillingToInvest());
                         genericInvestmentRole.act(producer);
                         // producer.act(investInPowerGenerationTechnologiesRole);
                         someOneStillWillingToInvest = true;
+
+                        logger.warn("someOneStillWillingToInvest in IF is: " + someOneStillWillingToInvest);
                     }
+
                 }
-            }
+
+            } // end while loop
+
+            logger.warn("n iterator WHILE Loop is: " + iteratorWhileLoop);
             resetWillingnessToInvest();
+
+            logger.warn("someOneStillWillingToInvest in WHILE is: " + someOneStillWillingToInvest);
+
         }
-        logger.warn("\t subsidized investment.");
-        for (TargetInvestor targetInvestor : template.findAll(TargetInvestor.class)) {
-            genericInvestmentRole.act(targetInvestor);
-        }
+        // logger.warn("\t subsidized investment.");
+        // for (TargetInvestor targetInvestor :
+        // template.findAll(TargetInvestor.class)) {
+        // genericInvestmentRole.act(targetInvestor);
+        // }
         timerInvest.stop();
         logger.warn("        took: {} seconds.", timerInvest.seconds());
 
