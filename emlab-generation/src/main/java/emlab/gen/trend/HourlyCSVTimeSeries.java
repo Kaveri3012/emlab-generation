@@ -46,7 +46,7 @@ public class HourlyCSVTimeSeries implements HourlyTimeSeries {
     private void readData() {
 
         this.persist();
-        logger.warn("Trying to read CSV file: " + filename);
+        // logger.warn("Trying to read CSV file: " + filename);
 
         String data = new String();
 
@@ -54,8 +54,8 @@ public class HourlyCSVTimeSeries implements HourlyTimeSeries {
         if (variableName == null) {
             try {
 
-                InputStreamReader inputStreamReader = new InputStreamReader(this.getClass().getResourceAsStream(
-                        filename));
+                InputStreamReader inputStreamReader = new InputStreamReader(
+                        this.getClass().getResourceAsStream(filename));
                 BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
 
                 String line;
@@ -73,14 +73,15 @@ public class HourlyCSVTimeSeries implements HourlyTimeSeries {
                 e.printStackTrace();
             }
         } else {
-            logger.warn("Trying to read variable " + variableName + " from CSV file: " + filename + " with delimiter "
-                    + delimiter);
+            // logger.warn("Trying to read variable " + variableName + " from
+            // CSV file: " + filename + " with delimiter "
+            // + delimiter);
 
             // Save the data in a long String
             try {
 
-                InputStreamReader inputStreamReader = new InputStreamReader(this.getClass().getResourceAsStream(
-                        filename));
+                InputStreamReader inputStreamReader = new InputStreamReader(
+                        this.getClass().getResourceAsStream(filename));
                 BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
 
                 if (!timeSeriesAreInDifferentColumns) {
@@ -132,8 +133,8 @@ public class HourlyCSVTimeSeries implements HourlyTimeSeries {
                 }
 
             } catch (Exception e) {
-                logger.error("Couldn't read CSV file: " + filename);
-                e.printStackTrace();
+                // logger.error("Couldn't read CSV file: " + filename);
+                // e.printStackTrace();
             }
         }
 
@@ -151,8 +152,8 @@ public class HourlyCSVTimeSeries implements HourlyTimeSeries {
             try {
                 return hourlyArray;
             } catch (Exception e) {
-                logger.error("CSV File has wrong length (!= 8760 hours");
-                e.printStackTrace();
+                // logger.error("CSV File has wrong length (!= 8760 hours");
+                // e.printStackTrace();
             }
         else {
             readData();

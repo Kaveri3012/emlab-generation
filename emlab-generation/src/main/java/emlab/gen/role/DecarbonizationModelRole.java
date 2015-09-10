@@ -69,7 +69,7 @@ import emlab.gen.role.tender.TenderMainRole;
  *
  */
 @ScriptComponent
-public class DecarbonizationModelRole extends AbstractRole<DecarbonizationModel> implements Role<DecarbonizationModel> {
+public class DecarbonizationModelRole extends AbstractRole<DecarbonizationModel>implements Role<DecarbonizationModel> {
 
     @Autowired
     private PayCO2TaxRole payCO2TaxRole;
@@ -422,7 +422,7 @@ public class DecarbonizationModelRole extends AbstractRole<DecarbonizationModel>
         // // exportLimiterRole.act(model);
         //
         // timerMarket.stop();
-        // logger.warn("        took: {} seconds.", timerMarket.seconds());
+        // logger.warn(" took: {} seconds.", timerMarket.seconds());
         // }
 
         logger.warn("  7. Investing");
@@ -433,7 +433,7 @@ public class DecarbonizationModelRole extends AbstractRole<DecarbonizationModel>
         if (getCurrentTick() > 1) {
             boolean someOneStillWillingToInvest = true;
 
-            int iteratorWhileLoop = 0;
+            int iterationsPerTick = 0;
 
             while (someOneStillWillingToInvest) {
                 someOneStillWillingToInvest = false;
@@ -441,23 +441,30 @@ public class DecarbonizationModelRole extends AbstractRole<DecarbonizationModel>
                 for (EnergyProducer producer : reps.energyProducerRepository
                         .findAllEnergyProducersExceptForRenewableTargetInvestorsAtRandom()) {
                     // invest in new plants
+                    iterationsPerTick++;
+                    // int iterationsPerProducer = 0;
                     if (producer.isWillingToInvest()) {
-                        logger.warn("producer.isWillingToInvest() is: " + producer.isWillingToInvest());
+                        // logger.warn("producer.isWillingToInvest() is: " +
+                        // producer.isWillingToInvest());
                         genericInvestmentRole.act(producer);
                         // producer.act(investInPowerGenerationTechnologiesRole);
                         someOneStillWillingToInvest = true;
+                        // iterationsPerProducer++;
 
-                        logger.warn("someOneStillWillingToInvest in IF is: " + someOneStillWillingToInvest);
+                        // logger.warn("someOneStillWillingToInvest in IF is: "
+                        // + someOneStillWillingToInvest);
                     }
-
+                    // logger.warn("number of iterations per producer" +
+                    // iterationsPerProducer);
                 }
 
             } // end while loop
-
-            logger.warn("n iterator WHILE Loop is: " + iteratorWhileLoop);
+            logger.warn("number of iterations per tick" + iterationsPerTick);
+            // logger.warn("n iterator WHILE Loop is: " + iteratorWhileLoop);
             resetWillingnessToInvest();
 
-            logger.warn("someOneStillWillingToInvest in WHILE is: " + someOneStillWillingToInvest);
+            // logger.warn("someOneStillWillingToInvest in WHILE is: " +
+            // someOneStillWillingToInvest);
 
         }
         // logger.warn("\t subsidized investment.");
@@ -493,15 +500,15 @@ public class DecarbonizationModelRole extends AbstractRole<DecarbonizationModel>
             timerMarket.reset();
             timerMarket.start();
             logger.warn("  8. Delete old nodes in year {}.", (getCurrentTick() - model.getDeletionAge()));
-            reps.bidRepository.delete(reps.bidRepository.findAllBidsForForTime(getCurrentTick()
-                    - model.getDeletionAge()));
-            reps.cashFlowRepository.delete(reps.cashFlowRepository.findAllCashFlowsForForTime(getCurrentTick()
-                    - model.getDeletionAge()));
+            reps.bidRepository
+                    .delete(reps.bidRepository.findAllBidsForForTime(getCurrentTick() - model.getDeletionAge()));
+            reps.cashFlowRepository.delete(
+                    reps.cashFlowRepository.findAllCashFlowsForForTime(getCurrentTick() - model.getDeletionAge()));
             reps.powerPlantRepository.delete(reps.powerPlantRepository
                     .findAllPowerPlantsDismantledBeforeTick(getCurrentTick() - model.getDeletionAge()));
-            reps.powerPlantDispatchPlanRepository.delete(reps.powerPlantDispatchPlanRepository
-                    .findAllPowerPlantDispatchPlansForTime(getCurrentTick() + model.getCentralForecastingYear() - 1,
-                            true));
+            reps.powerPlantDispatchPlanRepository
+                    .delete(reps.powerPlantDispatchPlanRepository.findAllPowerPlantDispatchPlansForTime(
+                            getCurrentTick() + model.getCentralForecastingYear() - 1, true));
             reps.financialPowerPlantReportRepository.delete(reps.financialPowerPlantReportRepository
                     .findAllFinancialPowerPlantReportsForTime(getCurrentTick() - 5 - model.getDeletionAge()));
             timerMarket.stop();
