@@ -174,9 +174,10 @@ public class DecarbonizationModelRole extends AbstractRole<DecarbonizationModel>
         logger.warn("  0b. Dismantling");
         timerMarket.reset();
         timerMarket.start();
-        for (ElectricitySpotMarket market : reps.marketRepository.findAllElectricitySpotMarketsAsList()) {
-            dismantlePowerPlantOperationalLossRole.act(market);
-        }
+        // for (ElectricitySpotMarket market :
+        // reps.marketRepository.findAllElectricitySpotMarketsAsList()) {
+        // dismantlePowerPlantOperationalLossRole.act(market);
+        // }
         timerMarket.stop();
         logger.warn("        took: {} seconds.", timerMarket.seconds());
 
@@ -433,7 +434,11 @@ public class DecarbonizationModelRole extends AbstractRole<DecarbonizationModel>
         if (getCurrentTick() > 1) {
             boolean someOneStillWillingToInvest = true;
 
+<<<<<<< HEAD
             int iterationsPerTick = 0;
+=======
+            // int iteratorWhileLoop = 0;
+>>>>>>> Rob/feature/TenderRob5
 
             while (someOneStillWillingToInvest) {
                 someOneStillWillingToInvest = false;
@@ -459,7 +464,11 @@ public class DecarbonizationModelRole extends AbstractRole<DecarbonizationModel>
                 }
 
             } // end while loop
+<<<<<<< HEAD
             logger.warn("number of iterations per tick" + iterationsPerTick);
+=======
+
+>>>>>>> Rob/feature/TenderRob5
             // logger.warn("n iterator WHILE Loop is: " + iteratorWhileLoop);
             resetWillingnessToInvest();
 

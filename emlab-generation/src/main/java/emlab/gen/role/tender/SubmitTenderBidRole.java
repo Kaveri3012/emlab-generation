@@ -148,7 +148,8 @@ public class SubmitTenderBidRole extends AbstractEnergyProducerRole<EnergyProduc
                         .findAllPowerGridNodesByZone(market.getZone()).iterator().next());
             }
 
-            // logger.warn("technology is " + technology +
+            logger.warn("technology is " + technology);
+
             // "technology is intermittent? " + technology.isIntermittent());
             // logger.warn("possibleInstallationNodes is: " +
             // possibleInstallationNodes);
@@ -339,23 +340,24 @@ public class SubmitTenderBidRole extends AbstractEnergyProducerRole<EnergyProduc
                     double discountedOpProfit = npv(discountedProjectCashInflow, wacc);
                     double projectValue = discountedOpProfit + discountedCapitalCosts;
 
-                    if (projectValue >= 0) {
+                    logger.warn("projectValue is: " + projectValue);
+                    logger.warn("totalAnnualExpectedGenerationOfPlant is: " + totalAnnualExpectedGenerationOfPlant);
+
+                    if (projectValue >= 0 || totalAnnualExpectedGenerationOfPlant == 0) {
                         bidPricePerMWh = 0d;
 
-                        // logger.warn("positive project value - bid price per mwh is: "
-                        // + bidPricePerMWh);
-
-                    } else if (totalAnnualExpectedGenerationOfPlant == 0) {
-                        bidPricePerMWh = 0d;
-                        // logger.warn(" zero totalAnnualExpectedGenerationOfPlant - bid price per mwh is "
-                        // + bidPricePerMWh);
+                        // but should also be able to bid for zero right? They
+                        // might get some wind fall profits then
 
                     } else {
+
                         // calculate discounted tender return factor term
 
                         TreeMap<Integer, Double> discountedTenderReturnFactorSummingTerm = calculateSimplePowerPlantInvestmentCashFlow(
                                 (int) tenderSchemeDuration, (int) plant.getFinishedConstruction(), 0, 1);
                         double discountedTenderReturnFactor = npv(discountedTenderReturnFactorSummingTerm, wacc);
+
+                        logger.warn("discountedTenderReturnFactor is: " + discountedTenderReturnFactor);
 
                         if (discountedTenderReturnFactor == 0) {
                             bidPricePerMWh = 0d;
@@ -373,7 +375,7 @@ public class SubmitTenderBidRole extends AbstractEnergyProducerRole<EnergyProduc
                             // logger.warn("projectvalue is: " + projectValue);
                             // logger.warn("discounted tender return factor is: "
                             // + totalAnnualExpectedGenerationOfPlant);
-                            // logger.warn("bid price per mwh is " +
+                            // logger.warn("bid price per mwh is laste ELSE " +
                             // bidPricePerMWh);
 
                             // create and persist tender bids for number of
@@ -398,17 +400,15 @@ public class SubmitTenderBidRole extends AbstractEnergyProducerRole<EnergyProduc
                                 bid.setTime(getCurrentTick());
                                 bid.persist();
 
-                                // logger.warn(agent + " has bid amount" +
-                                // totalAnnualExpectedGenerationOfPlant
-                                // + " with bid price " + bidPricePerMWh +
-                                // " with technology " + technology
-                                // + " in node " + node);
+                                logger.warn(agent + " has bid amount " + totalAnnualExpectedGenerationOfPlant
+                                        + " with bid price " + bidPricePerMWh + " with technology " + technology
+                                        + " in node " + node);
 
                             } // end for loop for tender bids
 
-                        } // end if else discountedTenderReturnFactor == 0
+                        } // end else calculate generation in MWh per year
 
-                    } // end if projectValue >= 0)
+                    } // end else calculate discounted tender return factor term
 
                 } // end if else for running hours
 

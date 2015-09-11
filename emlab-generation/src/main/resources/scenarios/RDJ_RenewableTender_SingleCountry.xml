@@ -86,15 +86,15 @@
 	</bean>
 
 	<bean id="nl_nreap" class="emlab.gen.trend.TimeSeriesCSVReader"
-		p:filename="/data/policyGoalNREAP_NL_DE_2050.csv" p:startingYear="0" p:delimiter=","
-		p:variableName="nl_target" />
+		p:filename="/data/policyGoalNREAP_NL_DE_2050.csv" p:startingYear="0"
+		p:delimiter="," p:variableName="nl_target" />
 
 	<bean id="interconnectorBeneluxGermany" class="emlab.gen.domain.technology.Interconnector"
 		p:capacity="0">
 		<property name="connections">
 			<set>
 				<ref bean="beneluxNode" />
-				
+
 			</set>
 		</property>
 	</bean>
@@ -392,7 +392,7 @@
 	<bean id="standardInvestmentRole"
 		class="emlab.gen.role.investment.InvestInPowerGenerationTechnologiesStandard" />
 
-		
+
 
 	<!-- Initial portfolios -->
 
@@ -428,7 +428,7 @@
 					<key>
 						<ref bean="biomassPGT" />
 					</key>
-					<value>0.01</value>
+					<value>0.365</value>
 				</entry>
 				<entry>
 					<key>
@@ -438,9 +438,21 @@
 				</entry>
 				<entry>
 					<key>
+						<ref bean="windOffshorePGT" />
+					</key>
+					<value>0.0024</value>
+				</entry>
+				<entry>
+					<key>
+						<ref bean="photovoltaicPGT" />
+					</key>
+					<value>0.001</value>
+				</entry>
+				<entry>
+					<key>
 						<ref bean="windPGT" />
 					</key>
-					<value>0.07</value>
+					<value>0.2606</value>
 				</entry>
 			</map>
 		</property>
@@ -492,45 +504,45 @@
 		<property name="minNationalCo2PriceTrend" ref="minCo2PriceTrendNL" />
 		<property name="governedZone" ref="nl" />
 	</bean>
-	
+
 	<!-- Power Generation Technology Node limits -->
-	
+
 	<bean id="ligniteNodeLimitNL"
 		class="emlab.gen.domain.technology.PowerGeneratingTechnologyNodeLimit"
 		p:permanentUpperCapacityLimit="0">
 		<property name="powerGeneratingTechnology" ref="lignitePGT" />
 		<property name="powerGridNode" ref="beneluxNode" />
 	</bean>
-	
+
 	<bean id="photovoltaicNodeLimitNL"
 		class="emlab.gen.domain.technology.PowerGeneratingTechnologyNodeLimit"
 		p:permanentUpperCapacityLimit="19637">
 		<property name="powerGeneratingTechnology" ref="photovoltaicPGT" />
 		<property name="powerGridNode" ref="beneluxNode" />
 	</bean>
-	
+
 	<!-- change node limit value according to potential curves! -->
-		<bean id="biomassLimitNL"
+	<bean id="biomassLimitNL"
 		class="emlab.gen.domain.technology.PowerGeneratingTechnologyNodeLimit"
-		p:permanentUpperCapacityLimit="16057">
+		p:permanentUpperCapacityLimit="7003.7">
 		<property name="powerGeneratingTechnology" ref="biomassPGT" />
 		<property name="powerGridNode" ref="beneluxNode" />
-	</bean> 
-	
+	</bean>
+
 	<bean id="windNodeLimitNL"
 		class="emlab.gen.domain.technology.PowerGeneratingTechnologyNodeLimit"
 		p:permanentUpperCapacityLimit="4000.2">
 		<property name="powerGeneratingTechnology" ref="windPGT" />
 		<property name="powerGridNode" ref="beneluxNode" />
 	</bean>
-	
+
 	<bean id="windOffshoreNodeLimitNL"
 		class="emlab.gen.domain.technology.PowerGeneratingTechnologyNodeLimit"
 		p:permanentUpperCapacityLimit="16945">
 		<property name="powerGeneratingTechnology" ref="windOffshorePGT" />
 		<property name="powerGridNode" ref="beneluxNode" />
-	</bean> 
-	
+	</bean>
+
 
 
 	<!-- Power Genration Technologies -->

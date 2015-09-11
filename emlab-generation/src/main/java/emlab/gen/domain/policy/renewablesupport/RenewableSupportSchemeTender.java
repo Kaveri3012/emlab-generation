@@ -42,6 +42,8 @@ public class RenewableSupportSchemeTender extends DecarbonizationAgent implement
 
     private boolean technologySpecificityEnabled;
 
+    private boolean jointTargetImplemented;
+
     private boolean locationSpecificityEnabled;
 
     @SimulationParameter(label = "Support Scheme Duration", from = 0, to = 50)
@@ -100,6 +102,14 @@ public class RenewableSupportSchemeTender extends DecarbonizationAgent implement
 
     public void setTechnologySpecificityEnabled(boolean technologySpecificityEnabled) {
         this.technologySpecificityEnabled = technologySpecificityEnabled;
+    }
+
+    public boolean isJointTargetImplemented() {
+        return jointTargetImplemented;
+    }
+
+    public void setJointTargetImplemented(boolean jointTargetImplemented) {
+        this.jointTargetImplemented = jointTargetImplemented;
     }
 
     public boolean isLocationSpecificityEnabled() {

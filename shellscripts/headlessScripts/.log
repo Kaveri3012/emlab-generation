@@ -1,0 +1,2 @@
+ERROR entityStateFactory not set, not creating accessors for class emlab.gen.role.investment.GenericInvestmentRole
+ERROR Specified scenario not found. Please put your scenario files in the src/main/java/scenarios folder.

@@ -17,12 +17,14 @@
 	<!-- Decarbonization Model -->
 	<bean id="decarbonizationModel" class="emlab.gen.domain.agent.DecarbonizationModel"
 		p:name="Decarbonization Model" p:simulationLength="${simulationLength}"
-		p:co2TradingImplemented="false" p:realRenewableDataImplemented="true"
+		p:co2TradingImplemented="false" p:realRenewableDataImplemented="false"
 		p:iterationSpeedFactor="3" p:iterationSpeedCriterion="0.005"
 		p:capDeviationCriterion="0.03"
 		p:deletionOldPPDPBidsAndCashFlowsEnabled="true" p:deletionAge="4"
-		p:renewableTenderSchemeImplemented="true">
+		p:renewableTenderSchemeImplemented="true"
+		p:jointTargetImplemented="false">
 	</bean>
+
 
 
 	<!-- Regulator -->
@@ -37,12 +39,11 @@
 	</bean>
 
 
-	<!-- Renewable Tender Scheme -->
-	<bean id="renewableSupportScheme"
+	<!-- Renewable Tender Scheme NL -->
+	<bean id="renewableSupportSchemeNL"
 		class="emlab.gen.domain.policy.renewablesupport.RenewableSupportSchemeTender"
 		p:name="RenewableTender" p:futureTenderOperationStartTime="5"
 		p:supportSchemeDuration="15">
-
 		<property name="regulator" ref="regulatorNL" />
 		<property name="powerGeneratingTechnologiesEligible">
 			<set>
@@ -55,9 +56,26 @@
 		</property>
 	</bean>
 
+	<!-- Renewable Tender Scheme DE -->
+	<bean id="renewableSupportSchemeDE"
+		class="emlab.gen.domain.policy.renewablesupport.RenewableSupportSchemeTender"
+		p:name="RenewableTender" p:futureTenderOperationStartTime="5"
+		p:supportSchemeDuration="15">
+		<property name="regulator" ref="regulatorDE" />
+		<property name="powerGeneratingTechnologiesEligible">
+			<set>
+				<ref bean="photovoltaicPGT" />
+				<ref bean="windOffshorePGT" />
+				<ref bean="windPGT" />
+				<ref bean="biomassPGT" />
+				<ref bean="biogasPGT" />
+			</set>
+		</property>
+	</bean>
 
-	<!-- Renewable Energy Target -->
-	<bean id="renewableTenderTarget"
+
+	<!-- Renewable Energy Target NL -->
+	<bean id="renewableTenderTargetNL"
 		class="emlab.gen.domain.policy.renewablesupport.RenewableTargetForTender"
 		p:yearlyRenewableTargetTimeSeries-ref="nl_nreap">
 		<property name="regulator" ref="regulatorNL" />
@@ -67,6 +85,20 @@
 		p:filename="/data/policyGoalNREAP_NL_DE_2050.csv" p:startingYear="0"
 		p:delimiter="," p:variableName="nl_target" />
 
+
+	<!-- Renewable Energy Target DE -->
+	<bean id="renewableTenderTargetDE"
+		class="emlab.gen.domain.policy.renewablesupport.RenewableTargetForTender"
+		p:yearlyRenewableTargetTimeSeries-ref="de_nreap">
+		<property name="regulator" ref="regulatorDE" />
+	</bean>
+
+	<bean id="de_nreap" class="emlab.gen.trend.TimeSeriesCSVReader"
+		p:filename="/data/policyGoalNREAP_NL_DE_2050.csv" p:startingYear="0"
+		p:delimiter="," p:variableName="de_target" />
+
+
+	<!-- Demand growth -->
 	<bean class="emlab.gen.trend.TriangularTrend" id="demandGrowthTrendNL"
 		p:start="${demandGrowthNLStart}" p:min="${demandGrowthNLMin}" p:max="${demandGrowthNLMax}"
 		p:top="${demandGrowthNLTop}" />
@@ -102,14 +134,14 @@
 
 
 	<!-- Interconnector -->
-	<!-- https://www.rvo.nl/sites/default/files/2015/05/IP01_Inpassingsplan%20DW380%20Toelichting%20en%20regels%2020150415%20-%20EXCL%20BIJLAGEN_vKT.pdf
-	says 2450 MW in (2014) with an expected increase to 3950 MW in 2017-->
+	<!-- https://www.rvo.nl/sites/default/files/2015/05/IP01_Inpassingsplan%20DW380%20Toelichting%20en%20regels%2020150415%20-%20EXCL%20BIJLAGEN_vKT.pdf 
+		says 2450 MW in (2014) with an expected increase to 3950 MW in 2017 -->
 	<bean id="interconnectorNetherlandsGermany" class="emlab.gen.domain.technology.Interconnector"
 		p:capacity="0">
 		<property name="connections">
 			<set>
-				<ref bean="nlNode1" />
-				<ref bean="deNode1" />
+				<ref bean="nlNode" />
+				<ref bean="deNode" />
 			</set>
 		</property>
 	</bean>
@@ -117,505 +149,122 @@
 
 	<!-- PowerGrid NL -->
 
-	<bean id="nlNode1" class="emlab.gen.domain.technology.PowerGridNode"
-		p:capacityMultiplicationFactor="1.0" p:name="nlNode1">
+	<bean id="nlNode" class="emlab.gen.domain.technology.PowerGridNode"
+		p:capacityMultiplicationFactor="1.0" p:name="nlNode">
 		<property name="zone" ref="nl" />
-		<property name="hourlyDemand" ref="demandNL" />
-		</bean>
-
-	<bean id="nlNode2" class="emlab.gen.domain.technology.PowerGridNode"
-		p:capacityMultiplicationFactor="1.0" p:name="nlNode2">
-		<property name="zone" ref="nl" />
+<!-- 		<property name="hourlyDemand" ref="demandNL" /> -->
 	</bean>
 
-	<bean id="nlNode3" class="emlab.gen.domain.technology.PowerGridNode"
-		p:capacityMultiplicationFactor="1.0" p:name="nlNode3">
-		<property name="zone" ref="nl" />
-	</bean>
 
-	
-
-	
 	<!-- PowerGrid DE -->
-	<bean id="deNode1" class="emlab.gen.domain.technology.PowerGridNode"
-		p:capacityMultiplicationFactor="1.0" p:name="deNode1">
+	<bean id="deNode" class="emlab.gen.domain.technology.PowerGridNode"
+		p:capacityMultiplicationFactor="1.0" p:name="deNode">
 		<property name="zone" ref="de" />
-		<property name="hourlyDemand" ref="demandDE" />
+<!-- 		<property name="hourlyDemand" ref="demandDE" /> -->
 	</bean>
-	
-<!-- 	<bean id="deNode2" class="emlab.gen.domain.technology.PowerGridNode" -->
-<!-- 		p:capacityMultiplicationFactor="1.0" p:name="deNode2"> -->
-<!-- 		<property name="zone" ref="de" /> -->
-<!-- 		<property name="hourlyDemand" ref="demandDE" /> -->
-<!-- 	</bean> -->
-	
-<!-- 	<bean id="deNode3" class="emlab.gen.domain.technology.PowerGridNode" -->
-<!-- 		p:capacityMultiplicationFactor="1.0" p:name="deNode3"> -->
-<!-- 		<property name="zone" ref="de" /> -->
-<!-- 		<property name="hourlyDemand" ref="demandDE" /> -->
-<!-- 	</bean> -->
-
 
 	<!-- Demand in MWh -->
-	<bean id="demandNL" class="emlab.gen.trend.HourlyCSVTimeSeries"
-		p:filename="/data/Load_NL_2010.csv" p:variableName="nl_demand"
-		p:timeSeriesAreInDifferentColumns="true" p:delimiter="," />
+<!-- 	<bean id="demandNL" class="emlab.gen.trend.HourlyCSVTimeSeries" -->
+<!-- 		p:filename="/data/Load_NL_2010.csv" p:variableName="nl_demand" -->
+<!-- 		p:timeSeriesAreInDifferentColumns="true" p:delimiter="," /> -->
 
-	<bean id="demandDE" class="emlab.gen.trend.HourlyCSVTimeSeries"
-		p:filename="/data/Load_DE_2010.csv" p:variableName="de_demand"
-		p:timeSeriesAreInDifferentColumns="true" p:delimiter="," />
-
-
-	<!-- Intermittent Production Profiles -->
-		
-
-	<!-- Photovoltaic nodes Netherlands (1-3 nodes)-->
-	<bean id="photovoltaicNodeNL1" class="emlab.gen.domain.technology.IntermittentResourceProfile"
-		p:filename="/data/multiNodeProduction_NL_solarPV.csv"
-		p:timeSeriesAreInDifferentColumns="true" p:delimiter=","
-		p:variableName="nl_node_1">
-		<property name="intermittentTechnology" ref="photovoltaicPGT"></property>
-		<property name="intermittentProductionNode" ref="nlNode1"></property>
-	</bean>
-	
-		<bean id="photovoltaicNodeNL2" class="emlab.gen.domain.technology.IntermittentResourceProfile"
-		p:filename="/data/multiNodeProduction_NL_solarPV.csv"
-		p:timeSeriesAreInDifferentColumns="true" p:delimiter=","
-		p:variableName="nl_node_2">
-		<property name="intermittentTechnology" ref="photovoltaicPGT"></property>
-		<property name="intermittentProductionNode" ref="nlNode2"></property>
-	</bean>
-	
-		<bean id="photovoltaicNodeNL3" class="emlab.gen.domain.technology.IntermittentResourceProfile"
-		p:filename="/data/multiNodeProduction_NL_solarPV.csv"
-		p:timeSeriesAreInDifferentColumns="true" p:delimiter=","
-		p:variableName="nl_node_3">
-		<property name="intermittentTechnology" ref="photovoltaicPGT"></property>
-		<property name="intermittentProductionNode" ref="nlNode3"></property>
-	</bean>
-			
-
-	<!-- Wind onshore nodes Netherlands (1-3 nodes)-->
-	<bean id="windOnSpeedNodeNL1" class="emlab.gen.domain.technology.IntermittentResourceProfile"
-		p:filename="/data/multiNodeProduction_NL_windOn.csv"
-		p:timeSeriesAreInDifferentColumns="true" p:delimiter=","
-		p:variableName="nl_node_1">
-		<property name="intermittentTechnology" ref="windPGT"></property>
-		<property name="intermittentProductionNode" ref="nlNode1"></property>
-	</bean>
-	
-	<bean id="windOnSpeedNodeNL2" class="emlab.gen.domain.technology.IntermittentResourceProfile"
-		p:filename="/data/multiNodeProduction_NL_windOn.csv"
-		p:timeSeriesAreInDifferentColumns="true" p:delimiter=","
-		p:variableName="nl_node_2">
-		<property name="intermittentTechnology" ref="windPGT"></property>
-		<property name="intermittentProductionNode" ref="nlNode2"></property>
-	</bean>
-	
-	<bean id="windOnSpeedNodeNL3" class="emlab.gen.domain.technology.IntermittentResourceProfile"
-		p:filename="/data/multiNodeProduction_NL_windOn.csv"
-		p:timeSeriesAreInDifferentColumns="true" p:delimiter=","
-		p:variableName="nl_node_3">
-		<property name="intermittentTechnology" ref="windPGT"></property>
-		<property name="intermittentProductionNode" ref="nlNode3"></property>
-	</bean>
-		
-
-	<!-- Wind offshore nodes Netherlands (1-3 nodes)-->
-	<bean id="windOffSpeedNodeNL1" class="emlab.gen.domain.technology.IntermittentResourceProfile"
-		p:filename="/data/multiNodeProduction_NL_windOff.csv"
-		p:timeSeriesAreInDifferentColumns="true" p:delimiter=","
-		p:variableName="nl_node_1">
-		<property name="intermittentTechnology" ref="windOffshorePGT"></property>
-		<property name="intermittentProductionNode" ref="nlNode1"></property>
-	</bean>
-
-	<bean id="windOffSpeedNodeNL2" class="emlab.gen.domain.technology.IntermittentResourceProfile"
-		p:filename="/data/multiNodeProduction_NL_windOff.csv"
-		p:timeSeriesAreInDifferentColumns="true" p:delimiter=","
-		p:variableName="nl_node_2">
-		<property name="intermittentTechnology" ref="windOffshorePGT"></property>
-		<property name="intermittentProductionNode" ref="nlNode2"></property>
-	</bean>
-
-	<bean id="windOffSpeedNodeNL3" class="emlab.gen.domain.technology.IntermittentResourceProfile"
-		p:filename="/data/multiNodeProduction_NL_windOff.csv"
-		p:timeSeriesAreInDifferentColumns="true" p:delimiter=","
-		p:variableName="nl_node_3">
-		<property name="intermittentTechnology" ref="windOffshorePGT"></property>
-		<property name="intermittentProductionNode" ref="nlNode3"></property>
-	</bean>
+<!-- 	<bean id="demandDE" class="emlab.gen.trend.HourlyCSVTimeSeries" -->
+<!-- 		p:filename="/data/Load_DE_2010.csv" p:variableName="de_demand" -->
+<!-- 		p:timeSeriesAreInDifferentColumns="true" p:delimiter="," /> -->
 
 
-	<!-- Photovoltaic nodes Germany (1-3 nodes)-->
-<!-- 	<bean id="photovoltaicNodeDE1" class="emlab.gen.domain.technology.IntermittentResourceProfile" -->
-<!-- 		p:filename="/data/multiNodeProduction_DE_solarPV.csv" -->
-<!-- 		p:timeSeriesAreInDifferentColumns="true" p:delimiter="," -->
-<!-- 		p:variableName="de_node_1"> -->
-<!-- 		<property name="intermittentTechnology" ref="photovoltaicPGT"></property> -->
-<!-- 		<property name="intermittentProductionNode" ref="deNode1"></property> -->
-<!-- 	</bean> -->
-	
-<!-- 		<bean id="photovoltaicNodeDE2" class="emlab.gen.domain.technology.IntermittentResourceProfile" -->
-<!-- 		p:filename="/data/multiNodeProduction_DE_solarPV.csv" -->
-<!-- 		p:timeSeriesAreInDifferentColumns="true" p:delimiter="," -->
-<!-- 		p:variableName="de_node_2"> -->
-<!-- 		<property name="intermittentTechnology" ref="photovoltaicPGT"></property> -->
-<!-- 		<property name="intermittentProductionNode" ref="deNode2"></property> -->
-<!-- 	</bean> -->
-	
-<!-- 		<bean id="photovoltaicNodeDE3" class="emlab.gen.domain.technology.IntermittentResourceProfile" -->
-<!-- 		p:filename="/data/multiNodeProduction_DE_solarPV.csv" -->
-<!-- 		p:timeSeriesAreInDifferentColumns="true" p:delimiter="," -->
-<!-- 		p:variableName="de_node_3"> -->
-<!-- 		<property name="intermittentTechnology" ref="photovoltaicPGT"></property> -->
-<!-- 		<property name="intermittentProductionNode" ref="deNode3"></property> -->
-<!-- 	</bean> -->
-	
-
-	<!-- Wind onshore nodes Germany (1-3 nodes)-->
-	
-<!-- 	<bean id="windOnSpeedNodeDE1" class="emlab.gen.domain.technology.IntermittentResourceProfile" -->
-<!-- 		p:filename="/data/multiNodeProduction_DE_windOn.csv" -->
-<!-- 		p:timeSeriesAreInDifferentColumns="true" p:delimiter="," -->
-<!-- 		p:variableName="de_node_1"> -->
-<!-- 		<property name="intermittentTechnology" ref="windPGT"></property> -->
-<!-- 		<property name="intermittentProductionNode" ref="deNode1"></property> -->
-<!-- 	</bean> -->
-	
-<!-- 	<bean id="windOnSpeedNodeDE2" class="emlab.gen.domain.technology.IntermittentResourceProfile" -->
-<!-- 		p:filename="/data/multiNodeProduction_DE_windOn.csv" -->
-<!-- 		p:timeSeriesAreInDifferentColumns="true" p:delimiter="," -->
-<!-- 		p:variableName="de_node_2"> -->
-<!-- 		<property name="intermittentTechnology" ref="windPGT"></property> -->
-<!-- 		<property name="intermittentProductionNode" ref="deNode2"></property> -->
-<!-- 	</bean> -->
-	
-<!-- 	<bean id="windOnSpeedNodeDE3" class="emlab.gen.domain.technology.IntermittentResourceProfile" -->
-<!-- 		p:filename="/data/multiNodeProduction_DE_windOn.csv" -->
-<!-- 		p:timeSeriesAreInDifferentColumns="true" p:delimiter="," -->
-<!-- 		p:variableName="de_node_3"> -->
-<!-- 		<property name="intermittentTechnology" ref="windPGT"></property> -->
-<!-- 		<property name="intermittentProductionNode" ref="deNode3"></property> -->
-<!-- 	</bean> -->
-
-	<!-- Wind offshore nodes Germany (1-3 nodes)-->
-
-<!-- 	<bean id="windOffSpeedNodeDE1" class="emlab.gen.domain.technology.IntermittentResourceProfile" -->
-<!-- 		p:filename="/data/multiNodeProduction_DE_windOff.csv" -->
-<!-- 		p:timeSeriesAreInDifferentColumns="true" p:delimiter="," -->
-<!-- 		p:variableName="de_node_1"> -->
-<!-- 		<property name="intermittentTechnology" ref="windOffshorePGT"></property> -->
-<!-- 		<property name="intermittentProductionNode" ref="deNode1"></property> -->
-<!-- 	</bean> -->
-	
-<!-- 		<bean id="windOffSpeedNodeDE2" class="emlab.gen.domain.technology.IntermittentResourceProfile" -->
-<!-- 		p:filename="/data/multiNodeProduction_DE_windOff.csv" -->
-<!-- 		p:timeSeriesAreInDifferentColumns="true" p:delimiter="," -->
-<!-- 		p:variableName="de_node_2"> -->
-<!-- 		<property name="intermittentTechnology" ref="windOffshorePGT"></property> -->
-<!-- 		<property name="intermittentProductionNode" ref="deNode2"></property> -->
-<!-- 	</bean> -->
-
-<!-- 	<bean id="windOffSpeedNodeDE3" class="emlab.gen.domain.technology.IntermittentResourceProfile" -->
-<!-- 		p:filename="/data/multiNodeProduction_DE_windOff.csv" -->
-<!-- 		p:timeSeriesAreInDifferentColumns="true" p:delimiter="," -->
-<!-- 		p:variableName="de_node_3"> -->
-<!-- 		<property name="intermittentTechnology" ref="windOffshorePGT"></property> -->
-<!-- 		<property name="intermittentProductionNode" ref="deNode3"></property> -->
-<!-- 	</bean> -->
-	
-
-
-	<!-- PowerGenerationTechnology Node Limits in MW  NL-->
-	<!-- from file Potential_capacity_generation_FLH_perBand_de_nl_biomass_biogas 
-		and compressed3_Potential_capacity_generation_FLH_perBand_de_nl_solar_wind -->
-
+	<!-- PowerGenerationTechnology Node Limits in MW NL -->
 
 	<!-- lignite node limits NL -->
-	<bean id="ligniteNodeLimitNL1"
+	<bean id="ligniteNodeLimitNL"
 		class="emlab.gen.domain.technology.PowerGeneratingTechnologyNodeLimit"
 		p:permanentUpperCapacityLimit="0">
 		<property name="powerGeneratingTechnology" ref="lignitePGT" />
-		<property name="powerGridNode" ref="nlNode1" />
+		<property name="powerGridNode" ref="nlNode" />
 	</bean>
-	
-		<bean id="ligniteNodeLimitNL2"
-		class="emlab.gen.domain.technology.PowerGeneratingTechnologyNodeLimit"
-		p:permanentUpperCapacityLimit="0">
-		<property name="powerGeneratingTechnology" ref="lignitePGT" />
-		<property name="powerGridNode" ref="nlNode2" />
-	</bean>
-	
-		<bean id="ligniteNodeLimitNL3"
-		class="emlab.gen.domain.technology.PowerGeneratingTechnologyNodeLimit"
-		p:permanentUpperCapacityLimit="0">
-		<property name="powerGeneratingTechnology" ref="lignitePGT" />
-		<property name="powerGridNode" ref="nlNode3" />
-	</bean>
-		
 
-	<!-- biomass node limits NL -->
-	<bean id="biomassLimitNL1"
+	<bean id="biomassLimitNL"
 		class="emlab.gen.domain.technology.PowerGeneratingTechnologyNodeLimit"
 		p:permanentUpperCapacityLimit="7006.3">
 		<property name="powerGeneratingTechnology" ref="biomassPGT" />
-		<property name="powerGridNode" ref="nlNode1" />
+		<property name="powerGridNode" ref="nlNode" />
 	</bean>
-	
-	<bean id="biomassLimitNL2"
-		class="emlab.gen.domain.technology.PowerGeneratingTechnologyNodeLimit"
-		p:permanentUpperCapacityLimit="0">
-		<property name="powerGeneratingTechnology" ref="biomassPGT" />
-		<property name="powerGridNode" ref="nlNode2" />
-	</bean>
-	
-	<bean id="biomassLimitNL3"
-		class="emlab.gen.domain.technology.PowerGeneratingTechnologyNodeLimit"
-		p:permanentUpperCapacityLimit="0">
-		<property name="powerGeneratingTechnology" ref="biomassPGT" />
-		<property name="powerGridNode" ref="nlNode3" />
-	</bean>
-		
-	
-	<!-- biogas node limits NL -->
-	<bean id="biogasNodeLimitNL1"
+
+	<bean id="biogasNodeLimitNL"
 		class="emlab.gen.domain.technology.PowerGeneratingTechnologyNodeLimit"
 		p:permanentUpperCapacityLimit="721.7">
 		<property name="powerGeneratingTechnology" ref="biogasPGT" />
-		<property name="powerGridNode" ref="nlNode1" />
+		<property name="powerGridNode" ref="nlNode" />
 	</bean>
-	
-	<bean id="biogasNodeLimitNL2"
+
+	<bean id="photovoltaicNodeLimitNL"
+		class="emlab.gen.domain.technology.PowerGeneratingTechnologyNodeLimit"
+		p:permanentUpperCapacityLimit="11444.5">
+		<property name="powerGeneratingTechnology" ref="photovoltaicPGT" />
+		<property name="powerGridNode" ref="nlNode" />
+	</bean>
+
+	<bean id="windNodeLimitNL"
+		class="emlab.gen.domain.technology.PowerGeneratingTechnologyNodeLimit"
+		p:permanentUpperCapacityLimit="3893.5">
+		<property name="powerGeneratingTechnology" ref="windPGT" />
+		<property name="powerGridNode" ref="nlNode" />
+	</bean>
+
+	<bean id="windOffshoreNodeLimitNL"
+		class="emlab.gen.domain.technology.PowerGeneratingTechnologyNodeLimit"
+		p:permanentUpperCapacityLimit="12056.2">
+		<property name="powerGeneratingTechnology" ref="windOffshorePGT" />
+		<property name="powerGridNode" ref="nlNode" />
+	</bean>
+
+
+	<!-- PowerGenerationTechnology Node Limits in MW DE -->
+
+
+	<!-- lignite node limits DE -->
+	<bean id="ligniteNodeLimitDE"
 		class="emlab.gen.domain.technology.PowerGeneratingTechnologyNodeLimit"
 		p:permanentUpperCapacityLimit="0">
+		<property name="powerGeneratingTechnology" ref="lignitePGT" />
+		<property name="powerGridNode" ref="deNode" />
+	</bean>
+
+	<bean id="biomassLimitDE"
+		class="emlab.gen.domain.technology.PowerGeneratingTechnologyNodeLimit"
+		p:permanentUpperCapacityLimit="9272.7">
+		<property name="powerGeneratingTechnology" ref="biomassPGT" />
+		<property name="powerGridNode" ref="deNode" />
+	</bean>
+
+	<bean id="biogasNodeLimitDE"
+		class="emlab.gen.domain.technology.PowerGeneratingTechnologyNodeLimit"
+		p:permanentUpperCapacityLimit="1842.9">
 		<property name="powerGeneratingTechnology" ref="biogasPGT" />
-		<property name="powerGridNode" ref="nlNode2" />
+		<property name="powerGridNode" ref="deNode" />
 	</bean>
-	
-	<bean id="biogasNodeLimitNL3"
+
+	<bean id="photovoltaicNodeLimitDE"
 		class="emlab.gen.domain.technology.PowerGeneratingTechnologyNodeLimit"
-		p:permanentUpperCapacityLimit="0">
-		<property name="powerGeneratingTechnology" ref="biogasPGT" />
-		<property name="powerGridNode" ref="nlNode3" />
-	</bean>
-	
-	
-	<!-- photovoltaic node limits NL -->
-	<bean id="photovoltaicNodeLimitNL1"
-		class="emlab.gen.domain.technology.PowerGeneratingTechnologyNodeLimit"
-		p:permanentUpperCapacityLimit="375.7">
+		p:permanentUpperCapacityLimit="39389.7">
 		<property name="powerGeneratingTechnology" ref="photovoltaicPGT" />
-		<property name="powerGridNode" ref="nlNode1" />
+		<property name="powerGridNode" ref="deNode" />
 	</bean>
 
-	<bean id="photovoltaicNodeLimitNL2"
+	<bean id="windNodeLimitDE"
 		class="emlab.gen.domain.technology.PowerGeneratingTechnologyNodeLimit"
-		p:permanentUpperCapacityLimit="8072.0">
-		<property name="powerGeneratingTechnology" ref="photovoltaicPGT" />
-		<property name="powerGridNode" ref="nlNode2" />
-	</bean>
-
-	<bean id="photovoltaicNodeLimitNL3"
-		class="emlab.gen.domain.technology.PowerGeneratingTechnologyNodeLimit"
-		p:permanentUpperCapacityLimit="2996.8">
-		<property name="powerGeneratingTechnology" ref="photovoltaicPGT" />
-		<property name="powerGridNode" ref="nlNode3" />
-	</bean>
-
-	
-	<!-- Wind onshore node limits NL -->
-	<bean id="windNodeLimitNL1"
-		class="emlab.gen.domain.technology.PowerGeneratingTechnologyNodeLimit"
-		p:permanentUpperCapacityLimit="1494.9">
+		p:permanentUpperCapacityLimit="25970.9">
 		<property name="powerGeneratingTechnology" ref="windPGT" />
-		<property name="powerGridNode" ref="nlNode1" />
+		<property name="powerGridNode" ref="deNode" />
 	</bean>
 
-	<bean id="windNodeLimitNL2"
+	<bean id="windOffshoreNodeLimitDE"
 		class="emlab.gen.domain.technology.PowerGeneratingTechnologyNodeLimit"
-		p:permanentUpperCapacityLimit="1948.0">
-		<property name="powerGeneratingTechnology" ref="windPGT" />
-		<property name="powerGridNode" ref="nlNode2" />
-	</bean>
-
-	<bean id="windNodeLimitNL3"
-		class="emlab.gen.domain.technology.PowerGeneratingTechnologyNodeLimit"
-		p:permanentUpperCapacityLimit="450.6">
-		<property name="powerGeneratingTechnology" ref="windPGT" />
-		<property name="powerGridNode" ref="nlNode3" />
-	</bean>
-
-
-	<!-- Wind offshore node limits NL -->
-	<bean id="windOffshoreNodeLimitNL1"
-		class="emlab.gen.domain.technology.PowerGeneratingTechnologyNodeLimit"
-		p:permanentUpperCapacityLimit="2925.9">
+		p:permanentUpperCapacityLimit="30285.3">
 		<property name="powerGeneratingTechnology" ref="windOffshorePGT" />
-		<property name="powerGridNode" ref="nlNode1" />
+		<property name="powerGridNode" ref="deNode" />
 	</bean>
 
-	<bean id="windOffshoreNodeLimitNL2"
-		class="emlab.gen.domain.technology.PowerGeneratingTechnologyNodeLimit"
-		p:permanentUpperCapacityLimit="7151.0">
-		<property name="powerGeneratingTechnology" ref="windOffshorePGT" />
-		<property name="powerGridNode" ref="nlNode2" />
-	</bean>
-
-	<bean id="windOffshoreNodeLimitNL3"
-		class="emlab.gen.domain.technology.PowerGeneratingTechnologyNodeLimit"
-		p:permanentUpperCapacityLimit="1979.3">
-		<property name="powerGeneratingTechnology" ref="windOffshorePGT" />
-		<property name="powerGridNode" ref="nlNode3" />
-	</bean>
-
-
-	
-	
-		<!-- PowerGenerationTechnology Node Limits in MW  DE-->
-	<!-- from file Potential_capacity_generation_FLH_perBand_de_nl_biomass_biogas 
-		and Potential_capacity_generation_FLH_perBand_de_nl_solar_wind 
-		
-		Germany has lignite, biomas, and biogass and nuclear also zero
-		
-		-->
-		
-		<!-- lignite node limits DE -->	
-<!-- 	<bean id="ligniteNodeLimitDE1" -->
-<!-- 		class="emlab.gen.domain.technology.PowerGeneratingTechnologyNodeLimit" -->
-<!-- 		p:permanentUpperCapacityLimit="0"> -->
-<!-- 		<property name="powerGeneratingTechnology" ref="lignitePGT" /> -->
-<!-- 		<property name="powerGridNode" ref="deNode1" /> -->
-<!-- 	</bean> -->
-	
-<!-- 		<bean id="ligniteNodeLimitDE2" -->
-<!-- 		class="emlab.gen.domain.technology.PowerGeneratingTechnologyNodeLimit" -->
-<!-- 		p:permanentUpperCapacityLimit="0"> -->
-<!-- 		<property name="powerGeneratingTechnology" ref="lignitePGT" /> -->
-<!-- 		<property name="powerGridNode" ref="deNode2" /> -->
-<!-- 	</bean> -->
-	
-<!-- 		<bean id="ligniteNodeLimitDE3" -->
-<!-- 		class="emlab.gen.domain.technology.PowerGeneratingTechnologyNodeLimit" -->
-<!-- 		p:permanentUpperCapacityLimit="0"> -->
-<!-- 		<property name="powerGeneratingTechnology" ref="lignitePGT" /> -->
-<!-- 		<property name="powerGridNode" ref="deNode3" /> -->
-<!-- 	</bean> -->
-	
-
-		<!-- biomass node limits DE --> 
-<!-- 	<bean id="biomassLimitDE1" -->
-<!-- 		class="emlab.gen.domain.technology.PowerGeneratingTechnologyNodeLimit" -->
-<!-- 		p:permanentUpperCapacityLimit="9272.7"> -->
-<!-- 		<property name="powerGeneratingTechnology" ref="biomassPGT" /> -->
-<!-- 		<property name="powerGridNode" ref="deNode1" /> -->
-<!-- 	</bean> -->
-	
-<!-- 	<bean id="biomassLimitDE2" -->
-<!-- 		class="emlab.gen.domain.technology.PowerGeneratingTechnologyNodeLimit" -->
-<!-- 		p:permanentUpperCapacityLimit="0"> -->
-<!-- 		<property name="powerGeneratingTechnology" ref="biomassPGT" /> -->
-<!-- 		<property name="powerGridNode" ref="deNode2" /> -->
-<!-- 	</bean> -->
-	
-<!-- 	<bean id="biomassLimitDE3" -->
-<!-- 		class="emlab.gen.domain.technology.PowerGeneratingTechnologyNodeLimit" -->
-<!-- 		p:permanentUpperCapacityLimit="0"> -->
-<!-- 		<property name="powerGeneratingTechnology" ref="biomassPGT" /> -->
-<!-- 		<property name="powerGridNode" ref="deNode3" /> -->
-<!-- 	</bean> -->
-	
-	
-		<!-- biogas node limits DE --> 
-<!-- 	<bean id="biogasNodeLimitDE1" -->
-<!-- 		class="emlab.gen.domain.technology.PowerGeneratingTechnologyNodeLimit" -->
-<!-- 		p:permanentUpperCapacityLimit="1842.9"> -->
-<!-- 		<property name="powerGeneratingTechnology" ref="biogasPGT" /> -->
-<!-- 		<property name="powerGridNode" ref="deNode1" /> -->
-<!-- 	</bean> -->
-	
-<!-- 	<bean id="biogasNodeLimitDE2" -->
-<!-- 		class="emlab.gen.domain.technology.PowerGeneratingTechnologyNodeLimit" -->
-<!-- 		p:permanentUpperCapacityLimit="0"> -->
-<!-- 		<property name="powerGeneratingTechnology" ref="biogasPGT" /> -->
-<!-- 		<property name="powerGridNode" ref="deNode2" /> -->
-<!-- 	</bean> -->
-	
-<!-- 	<bean id="biogasNodeLimitDE3" -->
-<!-- 		class="emlab.gen.domain.technology.PowerGeneratingTechnologyNodeLimit" -->
-<!-- 		p:permanentUpperCapacityLimit="0"> -->
-<!-- 		<property name="powerGeneratingTechnology" ref="biogasPGT" /> -->
-<!-- 		<property name="powerGridNode" ref="deNode3" /> -->
-<!-- 	</bean> -->
-	
-	
-	 	<!-- photovoltaic node limits DE --> 
-<!-- 	<bean id="photovoltaicNodeLimitDE1" -->
-<!-- 		class="emlab.gen.domain.technology.PowerGeneratingTechnologyNodeLimit" -->
-<!-- 		p:permanentUpperCapacityLimit="2538.0"> -->
-<!-- 		<property name="powerGeneratingTechnology" ref="photovoltaicPGT" /> -->
-<!-- 		<property name="powerGridNode" ref="deNode1" /> -->
-<!-- 	</bean> -->
-
-<!-- 	<bean id="photovoltaicNodeLimitDE2" -->
-<!-- 		class="emlab.gen.domain.technology.PowerGeneratingTechnologyNodeLimit" -->
-<!-- 		p:permanentUpperCapacityLimit="26864.3"> -->
-<!-- 		<property name="powerGeneratingTechnology" ref="photovoltaicPGT" /> -->
-<!-- 		<property name="powerGridNode" ref="deNode2" /> -->
-<!-- 	</bean> -->
-
-<!-- 	<bean id="photovoltaicNodeLimitDE3" -->
-<!-- 		class="emlab.gen.domain.technology.PowerGeneratingTechnologyNodeLimit" -->
-<!-- 		p:permanentUpperCapacityLimit="9987.4"> -->
-<!-- 		<property name="powerGeneratingTechnology" ref="photovoltaicPGT" /> -->
-<!-- 		<property name="powerGridNode" ref="deNode3" /> -->
-<!-- 	</bean> -->
-		
-
-		<!-- Wind onshore node limits DE --> 
-<!-- 	<bean id="windNodeLimitDE1" -->
-<!-- 		class="emlab.gen.domain.technology.PowerGeneratingTechnologyNodeLimit" -->
-<!-- 		p:permanentUpperCapacityLimit="15228.5"> -->
-<!-- 		<property name="powerGeneratingTechnology" ref="windPGT" /> -->
-<!-- 		<property name="powerGridNode" ref="deNode1" /> -->
-<!-- 	</bean> -->
-
-<!-- 	<bean id="windNodeLimitDE2" -->
-<!-- 		class="emlab.gen.domain.technology.PowerGeneratingTechnologyNodeLimit" -->
-<!-- 		p:permanentUpperCapacityLimit="4557.8"> -->
-<!-- 		<property name="powerGeneratingTechnology" ref="windPGT" /> -->
-<!-- 		<property name="powerGridNode" ref="deNode2" /> -->
-<!-- 	</bean> -->
-
-<!-- 	<bean id="windNodeLimitDE3" -->
-<!-- 		class="emlab.gen.domain.technology.PowerGeneratingTechnologyNodeLimit" -->
-<!-- 		p:permanentUpperCapacityLimit="6184.6"> -->
-<!-- 		<property name="powerGeneratingTechnology" ref="windPGT" /> -->
-<!-- 		<property name="powerGridNode" ref="deNode3" /> -->
-<!-- 	</bean> -->
-
-
-	 	<!-- Wind offshore node limits DE --> 
-<!-- 	<bean id="windOffshoreNodeLimitDE1" -->
-<!-- 		class="emlab.gen.domain.technology.PowerGeneratingTechnologyNodeLimit" -->
-<!-- 		p:permanentUpperCapacityLimit="6912.7"> -->
-<!-- 		<property name="powerGeneratingTechnology" ref="windOffshorePGT" /> -->
-<!-- 		<property name="powerGridNode" ref="deNode1" /> -->
-<!-- 	</bean> -->
-
-<!-- 	<bean id="windOffshoreNodeLimitDE2" -->
-<!-- 		class="emlab.gen.domain.technology.PowerGeneratingTechnologyNodeLimit" -->
-<!-- 		p:permanentUpperCapacityLimit="10465.9"> -->
-<!-- 		<property name="powerGeneratingTechnology" ref="windOffshorePGT" /> -->
-<!-- 		<property name="powerGridNode" ref="deNode2" /> -->
-<!-- 	</bean> -->
-
-<!-- 	<bean id="windOffshoreNodeLimitDE3" -->
-<!-- 		class="emlab.gen.domain.technology.PowerGeneratingTechnologyNodeLimit" -->
-<!-- 		p:permanentUpperCapacityLimit="12906.7"> -->
-<!-- 		<property name="powerGeneratingTechnology" ref="windOffshorePGT" /> -->
-<!-- 		<property name="powerGridNode" ref="deNode3" /> -->
-<!-- 	</bean> -->
 
 
 	<!-- Segments of load duration curves -->
@@ -994,6 +643,7 @@
 		p:willingToInvest="true" p:priceMarkUp="${priceMarkUp}"
 		p:numberOfYearsBacklookingForForecasting="${numberOfYearsBacklookingForForecasting}"
 		p:investorMarket-ref="NetherlandsElectricitySpotMarket" />
+
 	<bean id="energyProducerB" class="emlab.gen.domain.agent.EnergyProducer"
 		p:name="Energy Producer B" p:cash="${startCash}" p:investmentRole-ref="standardInvestmentRole"
 		p:longTermContractMargin="0.1" p:longTermContractPastTimeHorizon="3"
@@ -1005,6 +655,7 @@
 		p:willingToInvest="true" p:priceMarkUp="${priceMarkUp}"
 		p:numberOfYearsBacklookingForForecasting="${numberOfYearsBacklookingForForecasting}"
 		p:investorMarket-ref="NetherlandsElectricitySpotMarket" />
+
 	<bean id="energyProducerC" class="emlab.gen.domain.agent.EnergyProducer"
 		p:name="Energy Producer C" p:cash="${startCash}" p:investmentRole-ref="standardInvestmentRole"
 		p:longTermContractMargin="0.1" p:longTermContractPastTimeHorizon="3"
@@ -1016,24 +667,61 @@
 		p:willingToInvest="true" p:priceMarkUp="${priceMarkUp}"
 		p:numberOfYearsBacklookingForForecasting="${numberOfYearsBacklookingForForecasting}"
 		p:investorMarket-ref="NetherlandsElectricitySpotMarket" />
-<!-- 	<bean id="energyProducerD" class="emlab.gen.domain.agent.EnergyProducer" -->
-<!-- 		p:name="Energy Producer D" p:cash="${startCash}" p:investmentRole-ref="standardInvestmentRole" -->
-<!-- 		p:longTermContractMargin="0.1" p:longTermContractPastTimeHorizon="3" -->
-<!-- 		p:investmentFutureTimeHorizon="${investmentFutureTimeHorizon}" -->
-<!-- 		p:pastTimeHorizon="5" p:equityInterestRate="0.12" p:loanInterestRate="0.09" -->
-<!-- 		p:debtRatioOfInvestments="0.7" -->
-<!-- 		p:dismantlingProlongingYearsAfterTechnicalLifetime="0" -->
-<!-- 		p:dismantlingRequiredOperatingProfit="0" p:downpaymentFractionOfCash="0.5" -->
-<!-- 		p:willingToInvest="true" p:priceMarkUp="${priceMarkUp}" -->
-<!-- 		p:numberOfYearsBacklookingForForecasting="${numberOfYearsBacklookingForForecasting}" -->
-<!-- 		p:investorMarket-ref="NetherlandsElectricitySpotMarket" /> -->
+
+	<!-- <bean id="energyProducerD" class="emlab.gen.domain.agent.EnergyProducer" -->
+	<!-- p:name="Energy Producer D" p:cash="${startCash}" p:investmentRole-ref="standardInvestmentRole" -->
+	<!-- p:longTermContractMargin="0.1" p:longTermContractPastTimeHorizon="3" -->
+	<!-- p:investmentFutureTimeHorizon="${investmentFutureTimeHorizon}" -->
+	<!-- p:pastTimeHorizon="5" p:equityInterestRate="0.12" p:loanInterestRate="0.09" -->
+	<!-- p:debtRatioOfInvestments="0.7" -->
+	<!-- p:dismantlingProlongingYearsAfterTechnicalLifetime="0" -->
+	<!-- p:dismantlingRequiredOperatingProfit="0" p:downpaymentFractionOfCash="0.5" -->
+	<!-- p:willingToInvest="true" p:priceMarkUp="${priceMarkUp}" -->
+	<!-- p:numberOfYearsBacklookingForForecasting="${numberOfYearsBacklookingForForecasting}" -->
+	<!-- p:investorMarket-ref="NetherlandsElectricitySpotMarket" /> -->
+
+	<bean id="energyProducerE" class="emlab.gen.domain.agent.EnergyProducer"
+		p:name="Energy Producer E" p:cash="${startCash}" p:investmentRole-ref="standardInvestmentRole"
+		p:longTermContractMargin="0.1" p:longTermContractPastTimeHorizon="3"
+		p:investmentFutureTimeHorizon="${investmentFutureTimeHorizon}"
+		p:pastTimeHorizon="5" p:equityInterestRate="0.12" p:loanInterestRate="0.09"
+		p:debtRatioOfInvestments="0.7"
+		p:dismantlingProlongingYearsAfterTechnicalLifetime="0"
+		p:dismantlingRequiredOperatingProfit="0" p:downpaymentFractionOfCash="0.5"
+		p:willingToInvest="true" p:priceMarkUp="${priceMarkUp}"
+		p:numberOfYearsBacklookingForForecasting="${numberOfYearsBacklookingForForecasting}"
+		p:investorMarket-ref="GermanyElectricitySpotMarket" />
+
+	<bean id="energyProducerF" class="emlab.gen.domain.agent.EnergyProducer"
+		p:name="Energy Producer F" p:cash="${startCash}" p:investmentRole-ref="standardInvestmentRole"
+		p:longTermContractMargin="0.1" p:longTermContractPastTimeHorizon="3"
+		p:investmentFutureTimeHorizon="${investmentFutureTimeHorizon}"
+		p:pastTimeHorizon="5" p:equityInterestRate="0.12" p:loanInterestRate="0.09"
+		p:debtRatioOfInvestments="0.7"
+		p:dismantlingProlongingYearsAfterTechnicalLifetime="0"
+		p:dismantlingRequiredOperatingProfit="0" p:downpaymentFractionOfCash="0.5"
+		p:willingToInvest="true" p:priceMarkUp="${priceMarkUp}"
+		p:numberOfYearsBacklookingForForecasting="${numberOfYearsBacklookingForForecasting}"
+		p:investorMarket-ref="GermanyElectricitySpotMarket" />
+
+	<bean id="energyProducerG" class="emlab.gen.domain.agent.EnergyProducer"
+		p:name="Energy Producer G" p:cash="${startCash}" p:investmentRole-ref="standardInvestmentRole"
+		p:longTermContractMargin="0.1" p:longTermContractPastTimeHorizon="3"
+		p:investmentFutureTimeHorizon="${investmentFutureTimeHorizon}"
+		p:pastTimeHorizon="5" p:equityInterestRate="0.12" p:loanInterestRate="0.09"
+		p:debtRatioOfInvestments="0.7"
+		p:dismantlingProlongingYearsAfterTechnicalLifetime="0"
+		p:dismantlingRequiredOperatingProfit="0" p:downpaymentFractionOfCash="0.5"
+		p:willingToInvest="true" p:priceMarkUp="${priceMarkUp}"
+		p:numberOfYearsBacklookingForForecasting="${numberOfYearsBacklookingForForecasting}"
+		p:investorMarket-ref="GermanyElectricitySpotMarket" />
+
 
 	<bean id="standardInvestmentRole"
 		class="emlab.gen.role.investment.InvestInPowerGenerationTechnologiesStandard" />
 
 
-
-	<!-- Initial portfolios -->
+	<!-- Initial portfolios You still have to check the initial fractions -->
 
 	<bean id="powerPlantManufacturer" class="emlab.gen.domain.agent.PowerPlantManufacturer"
 		p:name="Power Plant Manufacturer" />
@@ -1104,7 +792,7 @@
 		</property>
 		<property name="nodes">
 			<set>
-				<ref bean="nlNode1" />
+				<ref bean="nlNode" />
 			</set>
 		</property>
 		<property name="market" ref="NetherlandsElectricitySpotMarket" />
@@ -1113,86 +801,84 @@
 				<ref bean="energyProducerA" />
 				<ref bean="energyProducerB" />
 				<ref bean="energyProducerC" />
-<!-- 				<ref bean="energyProducerD" /> -->
 			</list>
 		</property>
 	</bean>
-	
-<!-- 		<bean id="DEPortfolio" class="emlab.gen.domain.factory.ElectricityProducerFactory"> -->
-<!-- 		<property name="capacityMargin" value="0.25" /> -->
-<!-- 		<property name="portfolioShares"> -->
-<!-- 			<map> -->
-<!-- 				<entry> -->
-<!-- 					<key> -->
-<!-- 						<ref bean="coalPulverizedSuperCritical" /> -->
-<!-- 					</key> -->
-<!-- 					<value>0.33</value> -->
-<!-- 				</entry> -->
-<!-- 				<entry> -->
-<!-- 					<key> -->
-<!-- 						<ref bean="CCGT" /> -->
-<!-- 					</key> -->
-<!-- 					<value>0.40</value> -->
-<!-- 				</entry> -->
-<!-- 				<entry> -->
-<!-- 					<key> -->
-<!-- 						<ref bean="OCGT" /> -->
-<!-- 					</key> -->
-<!-- 					<value>0.16</value> -->
-<!-- 				</entry> -->
-<!-- 				<entry> -->
-<!-- 					<key> -->
-<!-- 						<ref bean="biomassPGT" /> -->
-<!-- 					</key> -->
-<!-- 					<value>0.00</value> -->
-<!-- 				</entry> -->
-<!-- 				<entry> -->
-<!-- 					<key> -->
-<!-- 						<ref bean="nuclearPGT" /> -->
-<!-- 					</key> -->
-<!-- 					<value>0.03</value> -->
-<!-- 				</entry> -->
-<!-- 				<entry> -->
-<!-- 					<key> -->
-<!-- 						<ref bean="windPGT" /> -->
-<!-- 					</key> -->
-<!-- 					<value>0.5744</value> -->
-<!-- 				</entry> -->
-<!-- 				<entry> -->
-<!-- 					<key> -->
-<!-- 						<ref bean="windOffshorePGT" /> -->
-<!-- 					</key> -->
-<!-- 					<value>0.00</value> -->
-<!-- 				</entry> -->
-<!-- 				<entry> -->
-<!-- 					<key> -->
-<!-- 						<ref bean="photovoltaicPGT" /> -->
-<!-- 					</key> -->
-<!-- 					<value>0.0166</value> -->
-<!-- 				</entry> -->
-<!-- 				<entry> -->
-<!-- 					<key> -->
-<!-- 						<ref bean="biogasPGT" /> -->
-<!-- 					</key> -->
-<!-- 					<value>0.00</value> -->
-<!-- 				</entry> -->
-<!-- 			</map> -->
-<!-- 		</property> -->
-<!-- 		<property name="nodes"> -->
-<!-- 			<set> -->
-<!-- 				<ref bean="deNode1" /> -->
-<!-- 			</set> -->
-<!-- 		</property> -->
-<!-- 		<property name="market" ref="GermanyElectricitySpotMarket" /> -->
-<!-- 		<property name="producers"> -->
-<!-- 			<list> -->
-<!-- 				<ref bean="energyProducerE" /> -->
-<!-- 				<ref bean="energyProducerF" /> -->
-<!-- 				<ref bean="energyProducerG" /> -->
-<!-- 				<ref bean="energyProducerH" /> --> 
-<!-- 			</list> -->
-<!-- 		</property> -->
-<!-- 	</bean> -->
+
+	<bean id="DEPortfolio" class="emlab.gen.domain.factory.ElectricityProducerFactory">
+		<property name="capacityMargin" value="0.25" />
+		<property name="portfolioShares">
+			<map>
+				<entry>
+					<key>
+						<ref bean="coalPulverizedSuperCritical" />
+					</key>
+					<value>0.33</value>
+				</entry>
+				<entry>
+					<key>
+						<ref bean="CCGT" />
+					</key>
+					<value>0.40</value>
+				</entry>
+				<entry>
+					<key>
+						<ref bean="OCGT" />
+					</key>
+					<value>0.16</value>
+				</entry>
+				<entry>
+					<key>
+						<ref bean="biomassPGT" />
+					</key>
+					<value>0.00</value>
+				</entry>
+				<entry>
+					<key>
+						<ref bean="nuclearPGT" />
+					</key>
+					<value>0.03</value>
+				</entry>
+				<entry>
+					<key>
+						<ref bean="windPGT" />
+					</key>
+					<value>0.5744</value>
+				</entry>
+				<entry>
+					<key>
+						<ref bean="windOffshorePGT" />
+					</key>
+					<value>0.00</value>
+				</entry>
+				<entry>
+					<key>
+						<ref bean="photovoltaicPGT" />
+					</key>
+					<value>0.0166</value>
+				</entry>
+				<entry>
+					<key>
+						<ref bean="biogasPGT" />
+					</key>
+					<value>0.00</value>
+				</entry>
+			</map>
+		</property>
+		<property name="nodes">
+			<set>
+				<ref bean="deNode" />
+			</set>
+		</property>
+		<property name="market" ref="GermanyElectricitySpotMarket" />
+		<property name="producers">
+			<list>
+				<ref bean="energyProducerE" />
+				<ref bean="energyProducerF" />
+				<ref bean="energyProducerG" />
+			</list>
+		</property>
+	</bean>
 
 
 	<!-- CO2 Tax -->
@@ -1533,7 +1219,7 @@
 		p:minimumFuelQuality="1" p:maximumInstalledCapacityFractionInCountry="1"
 		p:maximumInstalledCapacityFractionPerAgent="1"
 		p:baseSegmentDependentAvailability="0.40"
-		p:peakSegmentDependentAvailability="0.05" p:intermittent="true"
+		p:peakSegmentDependentAvailability="0.05" p:intermittent="false"
 		p:applicableForLongTermContract="true">
 	</bean>
 
@@ -1559,7 +1245,7 @@
 		p:minimumFuelQuality="1" p:maximumInstalledCapacityFractionInCountry="1"
 		p:maximumInstalledCapacityFractionPerAgent="1"
 		p:baseSegmentDependentAvailability="0.60"
-		p:peakSegmentDependentAvailability="0.07" p:intermittent="true"
+		p:peakSegmentDependentAvailability="0.07" p:intermittent="false"
 		p:applicableForLongTermContract="true">
 	</bean>
 
@@ -1606,7 +1292,7 @@
 		p:maximumInstalledCapacityFractionPerAgent="1"
 		p:baseSegmentDependentAvailability="0.20"
 		p:peakSegmentDependentAvailability="0.04"
-		p:applicableForLongTermContract="true" p:intermittent="true">
+		p:applicableForLongTermContract="true" p:intermittent="false">
 	</bean>
 
 
@@ -1653,7 +1339,7 @@
 	<bean id="projectPropertyConfigurer"
 		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
 		<property name="location"
-			value="classpath:scenarios/RDJ_RenewableTender_SingleCountry_MultiNodes.properties" />
+			value="classpath:scenarios/RDJ_RenewableTender_TwoCountries.properties" />
 	</bean>
 
 
