@@ -83,7 +83,7 @@
 
 	<bean id="nl_nreap" class="emlab.gen.trend.TimeSeriesCSVReader"
 		p:filename="/data/policyGoalNREAP_NL_DE_2050.csv" p:startingYear="0"
-		p:delimiter="," p:variableName="nl_target" />
+		p:delimiter="," p:variableName="nl_target_slow" />
 
 
 	<!-- Renewable Energy Target DE -->
