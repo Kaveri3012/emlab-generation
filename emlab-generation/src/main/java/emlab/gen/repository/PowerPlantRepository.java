@@ -254,6 +254,21 @@ public interface PowerPlantRepository extends GraphRepository<PowerPlant> {
     public double calculateCapacityOfPowerPlantsByTechnologyInPipeline(
             @Param("tech") PowerGeneratingTechnology technology, @Param("tick") long tick);
 
+    // I was here
+
+    @Query(value = "plantByTechnology=g.v(tech).in('TECHNOLOGY');"
+            + "result = plantByTechnology.filter{!((it.constructionStartTime + it.actualPermittime + it.actualLeadtime) <= tick) && (it.dismantleTime > tick || it.dismantleTime == 0)}.sum{it.actualNominalCapacity};"
+            + "if(result == null){return 0} else{return result}", type = QueryType.Gremlin)
+    public double calculateCapacityOfPowerPlantsInMarketByTechnologyInPipeline(
+            @Param("market") ElectricitySpotMarket market, @Param("tech") PowerGeneratingTechnology technology,
+            @Param("tick") long tick);
+
+    @Query(value = "result = g.v(market).out('ZONE').in('REGION').in('LOCATION').filter{it.__type__=='emlab.gen.domain.technology.PowerPlant'}.filter{!((it.constructionStartTime + it.actualPermittime + it.actualLeadtime) <= tick) && (it.dismantleTime > tick || it.dismantleTime == 0)}.as('x').out('TECHNOLOGY').filter{it.name==g.v(tech).name}.back('x').sum{it.actualNominalCapacity};"
+            + "if(result == null){return 0} else{return result}", type = QueryType.Gremlin)
+    public double calculateCapacityOfPowerPlantsInMarketAndTechnologyInPipeline(
+            @Param("market") ElectricitySpotMarket market, @Param("tech") PowerGeneratingTechnology technology,
+            @Param("tick") long tick);
+
     @Query(value = "plantByMarket=g.v(market).out('ZONE').in('REGION').in('LOCATION').filter{it.__type__=='emlab.gen.domain.technology.PowerPlant'};"
             + "result = plantByMarket.filter{!((it.constructionStartTime + it.actualPermittime + it.actualLeadtime) <= tick) && (it.dismantleTime > tick || it.dismantleTime == 0)}.sum{it.actualNominalCapacity};"
             + "if(result == null){return 0} else{return result}", type = QueryType.Gremlin)
@@ -358,5 +373,11 @@ public interface PowerPlantRepository extends GraphRepository<PowerPlant> {
     public Iterable<PowerPlant> findExpectedOperationalPowerPlantsInMarketByOwner(
             @Param("market") ElectricitySpotMarket market, @Param("tick") long tick,
             @Param("owner") EnergyProducer owner);
+
+    @Query(value = "result = g.v(market).out('ZONE').in('REGION').in('LOCATION').filter{it.__type__=='emlab.gen.domain.technology.PowerPlant'}.as('x').out('TECHNOLOGY').filter{it.name==g.v(tech).name}.back('x').filter{((it.constructionStartTime + it.actualPermittime + it.actualLeadtime) <= tick) && (it.expectedEndOfLife > tick)};"
+            + "if(result == null){return 0;} else{return result;}", type = QueryType.Gremlin)
+    public Iterable<PowerPlant> findExpectedOperationalPowerPlantsInMarketByTechnology(
+            @Param("market") ElectricitySpotMarket market, @Param("tech") PowerGeneratingTechnology technology,
+            @Param("tick") long tick);
 
 }

@@ -52,19 +52,20 @@ public class ClearRenewableTenderRole extends AbstractRole<Regulator> implements
     @Transactional
     public void act(Regulator regulator) {
 
-        logger.warn("Clear Renewable Tender Role started for regulator: " + regulator);
+        logger.warn("Clear Renewable Tender Role started");
 
         Zone zone = regulator.getZone();
         RenewableSupportSchemeTender scheme = reps.renewableSupportSchemeTenderRepository
                 .determineSupportSchemeForZone(zone);
 
-        logger.warn("scheme is: " + scheme);
+        // logger.warn("scheme is: " + scheme);
 
         // Initialize a sorted list for tender bids
         Iterable<TenderBid> sortedTenderBidsbyPriceAndZone = null;
         sortedTenderBidsbyPriceAndZone = reps.tenderBidRepository.findAllSortedTenderBidsbyTime(getCurrentTick(), zone);
 
         double tenderQuota = regulator.getAnnualRenewableTargetInMwh();
+        // logger.warn("TenderQuota is: " + tenderQuota);
         double sumOfTenderBidQuantityAccepted = 0d;
         double acceptedSubsidyPrice = 0d;
         boolean isTheTenderCleared = false;
@@ -103,9 +104,9 @@ public class ClearRenewableTenderRole extends AbstractRole<Regulator> implements
                     // currentTenderBid.getBidder()
                     // + " is sumOfTenderBidQuantityAccepted: " +
                     // sumOfTenderBidQuantityAccepted);
-
+                    //
                     sumOfTenderBidQuantityAccepted = sumOfTenderBidQuantityAccepted + currentTenderBid.getAmount();
-
+                    //
                     // logger.warn("ACCEPTED bid of " +
                     // currentTenderBid.getBidder()
                     // + " is sumOfTenderBidQuantityAccepted: " +
@@ -208,24 +209,25 @@ public class ClearRenewableTenderRole extends AbstractRole<Regulator> implements
 
         if (isTheTenderCleared == true) {
             TenderClearingPoint tenderClearingPoint = new TenderClearingPoint();
-            logger.warn("Tender CLEARED at price: " + acceptedSubsidyPrice);
+            // logger.warn("Tender CLEARED at price: " + acceptedSubsidyPrice);
             tenderClearingPoint.setPrice(acceptedSubsidyPrice);
             tenderClearingPoint.setRenewableSupportSchemeTender(scheme);
             tenderClearingPoint.setVolume(sumOfTenderBidQuantityAccepted);
             tenderClearingPoint.setTime(getCurrentTick());
             tenderClearingPoint.persist();
-            logger.warn("Clearing point Price is {} and volume is " + tenderClearingPoint.getVolume(),
+            logger.warn("Tender CLEARED at price {} and volume " + tenderClearingPoint.getVolume(),
                     tenderClearingPoint.getPrice());
 
         } else {
             TenderClearingPoint tenderClearingPoint = new TenderClearingPoint();
-            logger.warn("MARKET UNCLEARED at price: " + acceptedSubsidyPrice);
+            // logger.warn("MARKET UNCLEARED at price: " +
+            // acceptedSubsidyPrice);
             tenderClearingPoint.setPrice(acceptedSubsidyPrice);
             tenderClearingPoint.setVolume(sumOfTenderBidQuantityAccepted);
             tenderClearingPoint.setRenewableSupportSchemeTender(scheme);
             tenderClearingPoint.setTime(getCurrentTick());
             tenderClearingPoint.persist();
-            logger.warn("Clearing point Price is {} and volume is " + tenderClearingPoint.getVolume(),
+            logger.warn("Tender UNCLEARED at price {} and volume " + tenderClearingPoint.getVolume(),
                     tenderClearingPoint.getPrice());
 
         }

@@ -16,12 +16,12 @@
 
 	<!-- Decarbonization Model -->
 	<bean id="decarbonizationModel" class="emlab.gen.domain.agent.DecarbonizationModel"
-		p:name="Decarbonization Model" p:simulationLength="50"
-		p:co2TradingImplemented="false" p:realRenewableDataImplemented="false"
+		p:name="Decarbonization Model" p:simulationLength="15"
+		p:co2TradingImplemented="false" p:realRenewableDataImplemented="true"
 		p:iterationSpeedFactor="3" p:iterationSpeedCriterion="0.005"
 		p:capDeviationCriterion="0.03"
 		p:deletionOldPPDPBidsAndCashFlowsEnabled="true" p:deletionAge="4"
-		p:renewableTenderSchemeImplemented="false"
+		p:renewableTenderSchemeImplemented="true"
 		>
 	</bean>
 
@@ -113,11 +113,11 @@
 
 	<!-- Demand growth -->
 	<bean class="emlab.gen.trend.TriangularTrend" id="demandGrowthTrendNL"
-		p:start="${demandGrowthNLStart}" p:min="${demandGrowthNLMin}" p:max="${demandGrowthNLMax}"
-		p:top="${demandGrowthNLTop}" />
+		p:start="1" p:min="1" p:max="1"
+		p:top="1" />
 	<bean class="emlab.gen.trend.TriangularTrend" id="demandGrowthTrendDE"
-		p:start="${demandGrowthDEStart}" p:min="${demandGrowthDEMin}" p:max="${demandGrowthDEMax}"
-		p:top="${demandGrowthDETop}" />
+		p:start="1" p:min="1" p:max="1"
+		p:top="1" />
 
 	<!-- Substances -->
 	<bean id="coal" class="emlab.gen.domain.technology.Substance"
@@ -151,25 +151,92 @@
 	<bean id="nlNode" class="emlab.gen.domain.technology.PowerGridNode"
 		p:capacityMultiplicationFactor="1.0" p:name="nlNode">
 		<property name="zone" ref="nl" />
-<!-- 		<property name="hourlyDemand" ref="demandNL" /> -->
+		<property name="hourlyDemand" ref="demandNL" />
 	</bean>
 
 	<bean id="deNode" class="emlab.gen.domain.technology.PowerGridNode"
-		p:capacityMultiplicationFactor="1.0" p:name="deNode">
+		p:capacityMultiplicationFactor="4.0" p:name="deNode">
 		<property name="zone" ref="de" />
-<!-- 		<property name="hourlyDemand" ref="demandDE" /> -->
+		<property name="hourlyDemand" ref="demandDE" />
 	</bean>
 	
 
-	<!-- Demand in MWh -->
-	
-<!-- 	<bean id="demandNL" class="emlab.gen.trend.HourlyCSVTimeSeries" -->
-<!-- 		p:filename="/data/Load_NL_2010.csv" p:variableName="nl_demand" -->
-<!-- 		p:timeSeriesAreInDifferentColumns="true" p:delimiter="," /> -->
+<!-- 	Demand in MWh -->
+		
+	<bean id="demandNL" class="emlab.gen.trend.HourlyCSVTimeSeries"
+		p:filename="/data/Load_NL_2010.csv" p:variableName="nl_demand"
+		p:timeSeriesAreInDifferentColumns="true" p:delimiter="," />
 
-<!-- 	<bean id="demandDE" class="emlab.gen.trend.HourlyCSVTimeSeries" -->
-<!-- 		p:filename="/data/Load_DE_2010.csv" p:variableName="de_demand" -->
-<!-- 		p:timeSeriesAreInDifferentColumns="true" p:delimiter="," /> -->
+	<bean id="demandDE" class="emlab.gen.trend.HourlyCSVTimeSeries"
+		p:filename="/data/Load_DE_2010.csv" p:variableName="de_demand"
+		p:timeSeriesAreInDifferentColumns="true" p:delimiter="," />
+
+<!-- 	Intermittent Production Profiles  -->
+<!-- p:variableName="nl_node_3">, where 1,2 and 3 are adjustable for: 
+	1 = high FLH, 2 = med FLH, 3 = low FLH -->
+
+
+		
+
+<!--  	Photovoltaic nodes Netherlands  -->
+	<bean id="photovoltaicNodeNL1" class="emlab.gen.domain.technology.IntermittentResourceProfile"
+		p:filename="/data/multiNodeProduction_NL_solarPV.csv"
+		p:timeSeriesAreInDifferentColumns="true" p:delimiter=","
+		p:variableName="nl_node_3">
+		<property name="intermittentTechnology" ref="photovoltaicPGT"></property>
+		<property name="intermittentProductionNode" ref="nlNode"></property>
+	</bean>
+	
+				
+<!--  	Wind onshore nodes Netherlands  -->
+	<bean id="windOnSpeedNodeNL1" class="emlab.gen.domain.technology.IntermittentResourceProfile"
+		p:filename="/data/multiNodeProduction_NL_windOn.csv"
+		p:timeSeriesAreInDifferentColumns="true" p:delimiter=","
+		p:variableName="nl_node_1">
+		<property name="intermittentTechnology" ref="windPGT"></property>
+		<property name="intermittentProductionNode" ref="nlNode"></property>
+	</bean>
+	
+		
+<!--  	Wind offshore nodes Netherlands  -->
+	<bean id="windOffSpeedNodeNL1" class="emlab.gen.domain.technology.IntermittentResourceProfile"
+		p:filename="/data/multiNodeProduction_NL_windOff.csv"
+		p:timeSeriesAreInDifferentColumns="true" p:delimiter=","
+		p:variableName="nl_node_2">
+		<property name="intermittentTechnology" ref="windOffshorePGT"></property>
+		<property name="intermittentProductionNode" ref="nlNode"></property>
+	</bean>
+
+	
+<!--  		Photovoltaic nodes Germany   -->
+	<bean id="photovoltaicNodeDE1" class="emlab.gen.domain.technology.IntermittentResourceProfile"
+		p:filename="/data/multiNodeProduction_DE_solarPV.csv"
+		p:timeSeriesAreInDifferentColumns="true" p:delimiter=","
+		p:variableName="de_node_2">
+		<property name="intermittentTechnology" ref="photovoltaicPGT"></property>
+		<property name="intermittentProductionNode" ref="deNode"></property>
+	</bean>
+	
+	
+<!-- 		Wind onshore nodes Germany  -->
+	<bean id="windOnSpeedNodeDE1" class="emlab.gen.domain.technology.IntermittentResourceProfile"
+		p:filename="/data/multiNodeProduction_DE_windOn.csv"
+		p:timeSeriesAreInDifferentColumns="true" p:delimiter=","
+		p:variableName="de_node_3">
+		<property name="intermittentTechnology" ref="windPGT"></property>
+		<property name="intermittentProductionNode" ref="deNode"></property>
+	</bean>
+	
+	
+<!-- 		Wind offshore nodes Germany  -->
+	<bean id="windOffSpeedNodeDE1" class="emlab.gen.domain.technology.IntermittentResourceProfile"
+		p:filename="/data/multiNodeProduction_DE_windOff.csv"
+		p:timeSeriesAreInDifferentColumns="true" p:delimiter=","
+		p:variableName="de_node_1">
+		<property name="intermittentTechnology" ref="windOffshorePGT"></property>
+		<property name="intermittentProductionNode" ref="deNode"></property>
+	</bean>
+
 
 
 	<!-- PowerGenerationTechnology Node Limits in MW NL -->
@@ -730,6 +797,18 @@
 		p:willingToInvest="true" p:priceMarkUp="${priceMarkUp}"
 		p:numberOfYearsBacklookingForForecasting="${numberOfYearsBacklookingForForecasting}"
 		p:investorMarket-ref="GermanyElectricitySpotMarket" />
+		
+	<bean id="energyProducerI" class="emlab.gen.domain.agent.EnergyProducer"
+		p:name="Energy Producer I" p:cash="${startCash}" p:investmentRole-ref="standardInvestmentRole"
+		p:longTermContractMargin="0.1" p:longTermContractPastTimeHorizon="3"
+		p:investmentFutureTimeHorizon="${investmentFutureTimeHorizon}"
+		p:pastTimeHorizon="5" p:equityInterestRate="0.12" p:loanInterestRate="0.09"
+		p:debtRatioOfInvestments="0.7"
+		p:dismantlingProlongingYearsAfterTechnicalLifetime="0"
+		p:dismantlingRequiredOperatingProfit="0" p:downpaymentFractionOfCash="0.5"
+		p:willingToInvest="true" p:priceMarkUp="${priceMarkUp}"
+		p:numberOfYearsBacklookingForForecasting="${numberOfYearsBacklookingForForecasting}"
+		p:investorMarket-ref="GermanyElectricitySpotMarket" />
 
 
 	<bean id="standardInvestmentRole"
@@ -746,56 +825,56 @@
 
 	<!-- Power plant Factory -->
 	<bean id="NLPortfolio" class="emlab.gen.domain.factory.ElectricityProducerFactory">
-		<property name="capacityMargin" value="0.25" />
+		<property name="capacityMargin" value="0.45" />
 		<property name="portfolioShares">
 						<map>
 				<entry>
 					<key>
 						<ref bean="coalPulverizedSuperCritical" />
 					</key>
-					<value>0.219</value>
+					<value>0.244</value>
 				</entry>
 				<entry>
 					<key>
 						<ref bean="CCGT" />
 					</key>
-					<value>0.421</value>
+					<value>0.427</value>
 				</entry>
 				<entry>
 					<key>
 						<ref bean="OCGT" />
 					</key>
-					<value>0.169</value>
+					<value>0.174</value>
 				</entry>
 				<entry>
 					<key>
 						<ref bean="biomassPGT" />
 					</key>
-					<value>0.012</value>
+					<value>0.018</value>
 				</entry>
 				<entry>
 					<key>
 						<ref bean="nuclearPGT" />
 					</key>
-					<value>0.015</value>
+					<value>0.021</value>
 				</entry>
 				<entry>
 					<key>
 						<ref bean="windPGT" />
 					</key>
-					<value>0.08</value>
+					<value>0.086</value>
 				</entry>
 				<entry>
 					<key>
 						<ref bean="windOffshorePGT" />
 					</key>
-					<value>0.007</value>
+					<value>0.013</value>
 				</entry>
 				<entry>
 					<key>
 						<ref bean="photovoltaicPGT" />
 					</key>
-					<value>0.03</value>
+					<value>0.036</value>
 				</entry>
 				<entry>
 					<key>
@@ -822,62 +901,62 @@
 	</bean>
 
 	<bean id="DEPortfolio" class="emlab.gen.domain.factory.ElectricityProducerFactory">
-		<property name="capacityMargin" value="0.25" />
+		<property name="capacityMargin" value="0.45" />
 		<property name="portfolioShares">
 			<map>
 				<entry>
 					<key>
 						<ref bean="coalPulverizedSuperCritical" />
 					</key>
-					<value>0.151</value>
+					<value>0.154</value>
 				</entry>
 				<entry>
 					<key>
 						<ref bean="lignitePGT" />
 					</key>
-					<value>0.118</value>
+					<value>0.122</value>
 				</entry>
 				<entry>
 					<key>
 						<ref bean="CCGT" />
 					</key>
-					<value>0.087</value>
+					<value>0.091</value>
 				</entry>
 				<entry>
 					<key>
 						<ref bean="OCGT" />
 					</key>
-					<value>0.069</value>
+					<value>0.072</value>
 				</entry>
 				<entry>
 					<key>
 						<ref bean="biomassPGT" />
 					</key>
-					<value>0.049</value>
+					<value>0.052</value>
 				</entry>
 				<entry>
 					<key>
 						<ref bean="nuclearPGT" />
 					</key>
-					<value>0.06</value>
+					<value>0.064</value>
 				</entry>
 				<entry>
 					<key>
 						<ref bean="windPGT" />
 					</key>
-					<value>0.208</value>
+					<value>0.211</value>
 				</entry>
 				<entry>
 					<key>
 						<ref bean="windOffshorePGT" />
 					</key>
-					<value>0.009</value>
+					<value>0.012</value>
 				</entry>
 				<entry>
 					<key>
 						<ref bean="photovoltaicPGT" />
 					</key>
-					<value>0.218</value>
+					<value>0.222</value>
 				</entry>
 				<entry>
 					<key>
@@ -899,6 +978,7 @@
 				<ref bean="energyProducerF" />
 				<ref bean="energyProducerG" />
 				<ref bean="energyProducerH" />
+				<ref bean="energyProducerI" />
 			</list>
 		</property>
 	</bean>
@@ -1242,7 +1322,7 @@
 		p:minimumFuelQuality="1" p:maximumInstalledCapacityFractionInCountry="1"
 		p:maximumInstalledCapacityFractionPerAgent="1"
 		p:baseSegmentDependentAvailability="0.40"
-		p:peakSegmentDependentAvailability="0.05" p:intermittent="false"
+		p:peakSegmentDependentAvailability="0.05" p:intermittent="true"
 		p:applicableForLongTermContract="true">
 	</bean>
 
@@ -1268,7 +1348,7 @@
 		p:minimumFuelQuality="1" p:maximumInstalledCapacityFractionInCountry="1"
 		p:maximumInstalledCapacityFractionPerAgent="1"
 		p:baseSegmentDependentAvailability="0.60"
-		p:peakSegmentDependentAvailability="0.07" p:intermittent="false"
+		p:peakSegmentDependentAvailability="0.07" p:intermittent="true"
 		p:applicableForLongTermContract="true">
 	</bean>
 
@@ -1315,7 +1395,7 @@
 		p:maximumInstalledCapacityFractionPerAgent="1"
 		p:baseSegmentDependentAvailability="0.20"
 		p:peakSegmentDependentAvailability="0.04"
-		p:applicableForLongTermContract="true" p:intermittent="false">
+		p:applicableForLongTermContract="true" p:intermittent="true">
 	</bean>
 
 

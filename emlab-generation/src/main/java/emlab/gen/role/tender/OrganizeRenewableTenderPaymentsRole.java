@@ -65,7 +65,8 @@ public class OrganizeRenewableTenderPaymentsRole extends AbstractRole<RenewableS
                     currentTenderBid.getAcceptedAmount() * tenderClearingPoint.getPrice(), CashFlow.TENDER_SUBSIDY,
                     getCurrentTick(), currentTenderBid.getPowerPlant());
 
-            logger.warn("" + (currentTenderBid.getAcceptedAmount() * tenderClearingPoint.getPrice()));
+            // logger.warn("" + (currentTenderBid.getAcceptedAmount() *
+            // tenderClearingPoint.getPrice()));
 
             // logger.warn("Power plant of this bid is: " +
             // currentTenderBid.getPowerPlant());
