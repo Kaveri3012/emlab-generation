@@ -16,7 +16,7 @@
 
 	<!-- Decarbonization Model -->
 	<bean id="decarbonizationModel" class="emlab.gen.domain.agent.DecarbonizationModel"
-		p:name="Decarbonization Model" p:simulationLength="10"
+		p:name="Decarbonization Model" p:simulationLength="20"
 		p:co2TradingImplemented="false" p:realRenewableDataImplemented="false"
 		p:iterationSpeedFactor="3" p:iterationSpeedCriterion="0.005"
 		p:capDeviationCriterion="0.03"
@@ -819,7 +819,7 @@
 
 	<!-- Power plant Factory -->
 	<bean id="NLPortfolio" class="emlab.gen.domain.factory.ElectricityProducerFactory">
-		<property name="capacityMargin" value="0.60" />
+		<property name="capacityMargin" value="1.06" />
 		<property name="portfolioShares">
 						<map>
 				<entry>
@@ -895,7 +895,7 @@
 	</bean>
 
 	<bean id="DEPortfolio" class="emlab.gen.domain.factory.ElectricityProducerFactory">
-		<property name="capacityMargin" value="0.90" />
+		<property name="capacityMargin" value="1.35" />
 		<property name="portfolioShares">
 			<map>
 				<entry>

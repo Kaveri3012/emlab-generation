@@ -21,7 +21,7 @@
 		p:iterationSpeedFactor="3" p:iterationSpeedCriterion="0.005"
 		p:capDeviationCriterion="0.03"
 		p:deletionOldPPDPBidsAndCashFlowsEnabled="true" p:deletionAge="4"
-		p:renewableTenderSchemeImplemented="true"
+		p:renewableTenderSchemeImplemented="false"
 		>
 	</bean>
 
@@ -819,7 +819,7 @@
 
 	<!-- Power plant Factory -->
 	<bean id="NLPortfolio" class="emlab.gen.domain.factory.ElectricityProducerFactory">
-		<property name="capacityMargin" value="1.05" />
+		<property name="capacityMargin" value="1.06" />
 		<property name="portfolioShares">
 						<map>
 				<entry>
@@ -895,7 +895,7 @@
 	</bean>
 
 	<bean id="DEPortfolio" class="emlab.gen.domain.factory.ElectricityProducerFactory">
-		<property name="capacityMargin" value="1.05" />
+		<property name="capacityMargin" value="1.35" />
 		<property name="portfolioShares">
 			<map>
 				<entry>
