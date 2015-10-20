@@ -38,8 +38,8 @@ import emlab.gen.util.GeometricTrendRegression;
  */
 
 @RoleComponent
-public class CalculateRenewableTargetForTenderRole extends AbstractRole<RenewableSupportSchemeTender> implements
-        Role<RenewableSupportSchemeTender> {
+public class CalculateRenewableTargetForTenderRole extends AbstractRole<RenewableSupportSchemeTender>
+        implements Role<RenewableSupportSchemeTender> {
 
     @Autowired
     Reps reps;
@@ -55,10 +55,12 @@ public class CalculateRenewableTargetForTenderRole extends AbstractRole<Renewabl
         logger.warn("Calculate Renewable Target Role started of zone: " + zone);
 
         ElectricitySpotMarket market = reps.marketRepository.findElectricitySpotMarketForZone(zone);
+        logger.warn("electricity spot market is " + market.getName());
 
         // get demand factor
-        demandFactor = predictDemandForElectricitySpotMarket(market, scheme.getRegulator()
-                .getNumberOfYearsLookingBackToForecastDemand(), scheme.getFutureTenderOperationStartTime());
+        demandFactor = predictDemandForElectricitySpotMarket(market,
+                scheme.getRegulator().getNumberOfYearsLookingBackToForecastDemand(),
+                scheme.getFutureTenderOperationStartTime());
 
         /*
          * it aggregates segments from both countries, so the boolean should
@@ -70,9 +72,10 @@ public class CalculateRenewableTargetForTenderRole extends AbstractRole<Renewabl
         RenewableTargetForTender target = reps.renewableTargetForTenderRepository
                 .findRenewableTargetForTenderByRegulator(scheme.getRegulator());
 
-        targetFactor = target.getYearlyRenewableTargetTimeSeries().getValue(
-                getCurrentTick() + scheme.getFutureTenderOperationStartTime());
-        // logger.warn("targetFactor is " + targetFactor);
+        targetFactor = target.getYearlyRenewableTargetTimeSeries()
+                .getValue(getCurrentTick() + scheme.getFutureTenderOperationStartTime());
+        logger.warn("targetFactor is " + targetFactor + "future Time point is "
+                + (getCurrentTick() + scheme.getFutureTenderOperationStartTime()));
 
         // get totalLoad in MWh
         double totalExpectedConsumption = 0d;
@@ -88,7 +91,7 @@ public class CalculateRenewableTargetForTenderRole extends AbstractRole<Renewabl
         logger.warn("totalExpectedConsumption; " + totalExpectedConsumption);
         // renewable target for tender operation start year in MWh is
         double renewableTargetInMwh = targetFactor * totalExpectedConsumption;
-
+        logger.warn("renewable Target in MWh is: " + renewableTargetInMwh);
         // calculate expected generation, and subtract that from annual
         // target.
         // will be ActualTarget
@@ -127,12 +130,12 @@ public class CalculateRenewableTargetForTenderRole extends AbstractRole<Renewabl
                 // logger.warn("plant is " + plant);
                 fullLoadHours = 0d;
                 for (Segment segment : reps.segmentRepository.findAll()) {
-                    // logger.warn("Segment " + segment);
+                    logger.warn("Segment " + segment);
                     double fullLoadHoursPerSegment = 0d;
 
                     if (technology.isIntermittent()) {
                         factor = plant.getIntermittentTechnologyNodeLoadFactor().getLoadFactorForSegment(segment);
-
+                        logger.warn("IntermittentTechnologyNodeLoadFactor: " + factor);
                     } else {
                         double segmentID = segment.getSegmentID();
                         // logger.warn("segmentID: " + segmentID);
@@ -153,10 +156,9 @@ public class CalculateRenewableTargetForTenderRole extends AbstractRole<Renewabl
                     }
 
                     fullLoadHoursPerSegment = factor * segment.getLengthInHours();
-                    // logger.warn("fullLoadHoursPerSegment: " +
-                    // fullLoadHoursPerSegment);
+                    logger.warn("fullLoadHoursPerSegment: " + fullLoadHoursPerSegment);
                     fullLoadHours += fullLoadHoursPerSegment;
-                    // logger.warn("fullLoadHours: " + fullLoadHours);
+                    logger.warn("fullLoadHours: " + fullLoadHours);
 
                 }
 

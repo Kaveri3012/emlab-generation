@@ -42,12 +42,12 @@
 
 	<!-- Regulator -->
 	<bean id="regulatorNL" class="emlab.gen.domain.agent.Regulator"
-		p:name="regulator" p:numberOfYearsLookingBackToForecastDemand="4">
+		p:name="regulatorNL" p:numberOfYearsLookingBackToForecastDemand="4">
 		<property name="zone" ref="nl" />
 	</bean>
 
 	<bean id="regulatorDE" class="emlab.gen.domain.agent.Regulator"
-		p:name="regulator" p:numberOfYearsLookingBackToForecastDemand="4">
+		p:name="regulatorDE" p:numberOfYearsLookingBackToForecastDemand="4">
 		<property name="zone" ref="de" />
 	</bean>
 
