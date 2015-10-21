@@ -42,12 +42,12 @@
 
 	<!-- Regulator -->
 	<bean id="regulatorNL" class="emlab.gen.domain.agent.Regulator"
-		p:name="regulator" p:numberOfYearsLookingBackToForecastDemand="4">
+		p:name="regulatorNetherlands" p:numberOfYearsLookingBackToForecastDemand="4">
 		<property name="zone" ref="nl" />
 	</bean>
 
 	<bean id="regulatorDE" class="emlab.gen.domain.agent.Regulator"
-		p:name="regulator" p:numberOfYearsLookingBackToForecastDemand="4">
+		p:name="regulatorGermany" p:numberOfYearsLookingBackToForecastDemand="4">
 		<property name="zone" ref="de" />
 	</bean>
 
@@ -57,7 +57,7 @@
 		class="emlab.gen.domain.policy.renewablesupport.RenewableSupportSchemeTender"
 		p:name="RenewableTender" p:futureTenderOperationStartTime="5"
 		p:supportSchemeDuration="10">
-		<property name="regulator" ref="regulatorNL" />
+		<property name="regulatorNetherlands" ref="regulatorNL" />
 		<property name="powerGeneratingTechnologiesEligible">
 			<set>
 				<ref bean="photovoltaicPGT" />
@@ -74,7 +74,7 @@
 		class="emlab.gen.domain.policy.renewablesupport.RenewableSupportSchemeTender"
 		p:name="RenewableTender" p:futureTenderOperationStartTime="5"
 		p:supportSchemeDuration="10">
-		<property name="regulator" ref="regulatorDE" />
+		<property name="regulatorGermany" ref="regulatorDE" />
 		<property name="powerGeneratingTechnologiesEligible">
 			<set>
 				<ref bean="photovoltaicPGT" />
@@ -91,7 +91,7 @@
 	<bean id="renewableTenderTargetNL"
 		class="emlab.gen.domain.policy.renewablesupport.RenewableTargetForTender"
 		p:yearlyRenewableTargetTimeSeries-ref="nl_nreap">
-		<property name="regulator" ref="regulatorNL" />
+		<property name="regulatorNetherlands" ref="regulatorNL" />
 	</bean>
 
 	<bean id="nl_nreap" class="emlab.gen.trend.TimeSeriesCSVReader"
@@ -103,7 +103,7 @@
 	<bean id="renewableTenderTargetDE"
 		class="emlab.gen.domain.policy.renewablesupport.RenewableTargetForTender"
 		p:yearlyRenewableTargetTimeSeries-ref="de_nreap">
-		<property name="regulator" ref="regulatorDE" />
+		<property name="regulatorGermany" ref="regulatorDE" />
 	</bean>
 
 	<bean id="de_nreap" class="emlab.gen.trend.TimeSeriesCSVReader"

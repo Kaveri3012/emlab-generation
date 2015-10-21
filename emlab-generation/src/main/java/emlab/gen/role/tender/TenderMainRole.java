@@ -59,10 +59,12 @@ public class TenderMainRole extends AbstractRole<RenewableSupportSchemeTender>
     @Transactional
     public void act(RenewableSupportSchemeTender scheme) {
 
+        calculateRenewableTargetForTenderRole.act(scheme);
+
         Regulator regulator = scheme.getRegulator();
         ElectricitySpotMarket market = reps.marketRepository.findElectricitySpotMarketForZone(regulator.getZone());
 
-        for (EnergyProducer producer : reps.energyProducerRepository.findAllByPropertyValue("investorMarket", market)) {
+        for (EnergyProducer producer : reps.energyProducerRepository.findEnergyProducersByMarketAtRandom(market)) {
             submitTenderBidRole.act(producer);
         }
 

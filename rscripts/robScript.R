@@ -1,5 +1,5 @@
 #File and folder initiation
-nameFile <- "ThreeNodeTest"
+nameFile <- "OneeNodeTest"
 analysisFolder <- "~/Desktop/emlabGen/output/"
 analysisFolder <- paste(analysisFolder, nameFile, "/", sep="")
 analysisFolder
@@ -783,6 +783,7 @@ plotTenderSubsidy <- function(df){
   subsidyF <- df$TenderYearlySubsidyProducer_Tender_Subsidy_Yearly_Producer_F
   subsidyG <- df$TenderYearlySubsidyProducer_Tender_Subsidy_Yearly_Producer_G
   subsidyH <- df$TenderYearlySubsidyProducer_Tender_Subsidy_Yearly_Producer_H
+  subsidyI <- df$TenderYearlySubsidyProducer_Tender_Subsidy_Yearly_Producer_I
   prodSubsidyPlot <- ggplot(df, aes(x=df$tick), environment = localEnv)+
     geom_line(aes(y=subsidyA, colour="subsidyA"))+
     geom_line(aes(y=subsidyB, colour="subsidyB"))+
@@ -792,14 +793,15 @@ plotTenderSubsidy <- function(df){
     geom_line(aes(y=subsidyF, colour="subsidyF"))+
     geom_line(aes(y=subsidyG, colour="subsidyG"))+
     geom_line(aes(y=subsidyH, colour="subsidyH"))+
+    geom_line(aes(y=subsidyI, colour="subsidyI"))+
     ggtitle("Overview of producer Tender Subsidy")+
     scale_x_continuous(name = "Time (year)")+
     scale_y_continuous(name = "Subsidy (EUR)")+
     scale_colour_manual(name = "Legend", values = c(subsidyA = "green", subsidyB = "blue", subsidyC = "yellow", subsidyD = "seashell4",
-                                                    subsidyE = "purple", subsidyF = "red", subsidyG = "pink", subsidyH = "black"),
+                                                    subsidyE = "purple", subsidyF = "red", subsidyG = "pink", subsidyH = "black", subsidyI = "grey"),
                         labels = c(subsidyA = "Energy producer A",subsidyB = "Energy producer B",subsidyC = "Energy producer C",
                                    subsidyD = "Energy producer D",subsidyE = "Energy producer E",subsidyF = "Energy producer F",
-                                   subsidyG = "Energy producer G",subsidyH = "Energy producer H"))+
+                                   subsidyG = "Energy producer G",subsidyH = "Energy producer H", subsidyI = "Energy producer I"))+
     theme(plot.title = element_text(lineheight = 0.8, face = "bold", size = 11),
           axis.title.x = element_text(size = 9, angle = 0),
           axis.title.y = element_text(size = 9, angle = 90),

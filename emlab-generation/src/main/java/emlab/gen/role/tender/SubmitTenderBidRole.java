@@ -415,10 +415,15 @@ public class SubmitTenderBidRole extends AbstractEnergyProducerRole<EnergyProduc
                                 / (discountedTenderReturnFactor * totalAnnualExpectedGenerationOfPlant);
 
                         Zone zone = market.getZone();
+                        logger.warn("get zone via market: " + market.getZone());
+                        logger.warn("zone: " + zone);
                         RenewableSupportSchemeTender scheme = reps.renewableSupportSchemeTenderRepository
                                 .determineSupportSchemeForZone(zone);
 
-                        // logger.warn("scheme is: " + scheme);
+                        logger.warn("reps Scheme: "
+                                + reps.renewableSupportSchemeTenderRepository.determineSupportSchemeForZone(zone));
+
+                        logger.warn("scheme is: " + scheme);
 
                         for (long i = 1; i <= numberOfPlants; i++) {
 
@@ -435,30 +440,22 @@ public class SubmitTenderBidRole extends AbstractEnergyProducerRole<EnergyProduc
                                             + (plant.calculateActualLeadtime() + plant.calculateActualPermittime()) + tenderSchemeDuration),
                                     bidPricePerMWh, technology, getCurrentTick(), Bid.SUBMITTED, scheme);
 
-                            // logger.warn("totalAnnualExpectedGenerationOfPlant is: "
-                            // + totalAnnualExpectedGenerationOfPlant
-                            // + " and plant: "
-                            // + plant
-                            // + " and agent is: "
-                            // + agent
-                            // // + " in zone: "
-                            // // + zone
-                            // // + " node is: "
-                            // // + node
-                            // + " start time is: "
-                            // + (getCurrentTick() +
-                            // (plant.calculateActualLeadtime() + plant
-                            // .calculateActualPermittime()))
-                            // + " end time is "
-                            // + (getCurrentTick()
-                            // + (plant.calculateActualLeadtime() +
-                            // plant.calculateActualPermittime()) +
-                            // tenderSchemeDuration)
-                            // + " and bid price: " + bidPricePerMWh +
-                            // " is technology: " + technology
-                            // + " current time: " + getCurrentTick()
-                            // // + " status is: " + Bid.SUBMITTED
-                            // + " Scheme is: " + scheme);
+                            logger.warn("totalAnnualExpectedGenerationOfPlant; "
+                                    + totalAnnualExpectedGenerationOfPlant
+                                    + " ; of plant; "
+                                    + plant
+                                    + " ;from producer; "
+                                    + agent
+                                    + " ;in zone; "
+                                    + zone
+                                    + " ;start time; "
+                                    + (getCurrentTick() + (plant.calculateActualLeadtime() + plant
+                                            .calculateActualPermittime()))
+                                    + " ;end time; "
+                                    + (getCurrentTick()
+                                            + (plant.calculateActualLeadtime() + plant.calculateActualPermittime()) + tenderSchemeDuration)
+                                    + " ;and bid price; " + bidPricePerMWh + " ;with technology; " + technology
+                                    + " ;current time; " + getCurrentTick() + " ;of Scheme; " + scheme);
 
                         } // end for loop for tender bids
 
