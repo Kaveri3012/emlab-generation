@@ -95,12 +95,14 @@ public class CalculateRenewableTargetForTenderRole extends AbstractRole<Renewabl
         double expectedGenerationPerTechnology = 0d;
         double expectedGenerationPerPlant = 0d;
         long numberOfSegments = reps.segmentRepository.count();
-        // logger.warn("numberOfsegments: " + numberOfSegments);
+        int noOfPlants = 0;
+
         for (PowerGeneratingTechnology technology : scheme.getPowerGeneratingTechnologiesEligible()) {
             expectedGenerationPerTechnology = 0d;
             for (PowerPlant plant : reps.powerPlantRepository.findOperationalPowerPlantsByMarketAndTechnology(market,
                     technology, getCurrentTick())) {
                 expectedGenerationPerPlant = 0d;
+                noOfPlants++;
                 for (Segment segment : reps.segmentRepository.findAll()) {
                     double availablePlantCapacity = plant.getAvailableCapacity(getCurrentTick(), segment,
                             numberOfSegments);
@@ -112,6 +114,7 @@ public class CalculateRenewableTargetForTenderRole extends AbstractRole<Renewabl
             totalExpectedGeneration += expectedGenerationPerTechnology;
 
         }
+        logger.warn("No of Expected Plants; " + noOfPlants);
 
         /*
          * To compare
