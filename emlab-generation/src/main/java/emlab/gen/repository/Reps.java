@@ -102,6 +102,9 @@ public class Reps {
     public IntermittentTechnologyNodeLoadFactorRepository intermittentTechnologyNodeLoadFactorRepository;
 
     @Autowired
+    public FinancialPowerPlantReportRepository financialPowerPlantReportRepository;
+
+    @Autowired
     public CapacityMarketRepository capacityMarketRepository;
 
     @Autowired

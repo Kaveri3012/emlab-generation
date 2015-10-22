@@ -1,12 +1,12 @@
 /*******************************************************************************
  * Copyright 2012 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -77,6 +77,20 @@ public class PowerGeneratingTechnology {
     private boolean applicableForLongTermContract;
 
     private boolean intermittent;
+
+    private boolean storage;
+
+    private double chargeEfficiency;
+
+    private double disChargeEfficiency;
+
+    private double chargingRate;
+
+    private double disChargingRate;
+
+    private double maxStorageCapacity;
+
+    private double minStorageCapacity;
 
     private double maximumLifeExtension;
 
@@ -264,6 +278,7 @@ public class PowerGeneratingTechnology {
         this.fuels = fuels;
     }
 
+    @Override
     public String toString() {
         return this.getName();
     }
@@ -290,6 +305,62 @@ public class PowerGeneratingTechnology {
 
     public void setIntermittent(boolean intermittent) {
         this.intermittent = intermittent;
+    }
+
+    public boolean isStorage() {
+        return storage;
+    }
+
+    public void setStorage(boolean storage) {
+        this.storage = storage;
+    }
+
+    public double getChargeEfficiency() {
+        return chargeEfficiency;
+    }
+
+    public void setChargeEfficiency(double chargeEfficiency) {
+        this.chargeEfficiency = chargeEfficiency;
+    }
+
+    public double getDisChargeEfficiency() {
+        return disChargeEfficiency;
+    }
+
+    public void setDisChargeEfficiency(double disChargeEfficiency) {
+        this.disChargeEfficiency = disChargeEfficiency;
+    }
+
+    public double getChargingRate() {
+        return chargingRate;
+    }
+
+    public void setChargingRate(double chargingRate) {
+        this.chargingRate = chargingRate;
+    }
+
+    public double getDisChargingRate() {
+        return disChargingRate;
+    }
+
+    public void setDisChargingRate(double disChargingRate) {
+        this.disChargingRate = disChargingRate;
+    }
+
+    public double getMaxStorageCapacity() {
+        return maxStorageCapacity;
+    }
+
+    public void setMaxStorageCapacity(double maxStorageCapacity) {
+        this.maxStorageCapacity = maxStorageCapacity;
+    }
+
+    public double getMinStorageCapacity() {
+        return minStorageCapacity;
+    }
+
+    public void setMinStorageCapacity(double minStorageCapacity) {
+        this.minStorageCapacity = minStorageCapacity;
     }
 
 }

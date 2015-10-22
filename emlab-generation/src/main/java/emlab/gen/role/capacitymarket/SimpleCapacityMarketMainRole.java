@@ -44,7 +44,7 @@ public class SimpleCapacityMarketMainRole extends AbstractRole<CapacityMarket> i
     SubmitCapacityBidToMarketRole submitCapacityBidToMarketRole;
 
     @Autowired
-    ClearCapacityMarketRole clearCapacityMarketRole;
+    ClearCapacityMarketNewRole clearCapacityMarketNewRole;
 
     @Autowired
     PaymentFromConsumerToProducerForCapacityRole paymentFromConsumerToProducerforCapacityRole;
@@ -66,7 +66,7 @@ public class SimpleCapacityMarketMainRole extends AbstractRole<CapacityMarket> i
         logger.warn("******************capacity bids submitted****************************");
 
         // Clear capacity market
-        clearCapacityMarketRole.act(regulator);
+        clearCapacityMarketNewRole.act(regulator);
 
         logger.warn("************************Capacity Market cleared******************************");
 

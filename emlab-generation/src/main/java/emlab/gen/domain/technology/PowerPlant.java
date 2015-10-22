@@ -87,7 +87,7 @@ public class PowerPlant {
     private double actualEfficiency;
     private double expectedEndOfLife;
     private double actualNominalCapacity;
-    private boolean hasFeedInPremiumContract;
+    private double actualStorageContentEndOfYear;
 
     public double ageFraction;
     public double profitability;
@@ -203,7 +203,7 @@ public class PowerPlant {
                         double range = max - min;
 
                         factor = max - segmentPortion * range;
-                        // int i = 0;
+                        int i = 0;
                     } else {
                         factor = getTechnology().getPeakSegmentDependentAvailability();
                     }
@@ -239,7 +239,6 @@ public class PowerPlant {
                 }
                 return getActualNominalCapacity() * factor;
             }
-
         } else {
             return 0;
         }
@@ -431,20 +430,20 @@ public class PowerPlant {
      * @param timeOfPermitorBuildingStart
      */
     public void calculateAndSetActualInvestedCapital(long timeOfPermitorBuildingStart) {
-        setActualInvestedCapital(this.getTechnology()
-                .getInvestmentCost(timeOfPermitorBuildingStart + getActualLeadtime() + getActualPermittime())
+        setActualInvestedCapital(this.getTechnology().getInvestmentCost(
+                timeOfPermitorBuildingStart + getActualLeadtime() + getActualPermittime())
                 * getActualNominalCapacity());
     }
 
     public void calculateAndSetActualFixedOperatingCosts(long timeOfPermitorBuildingStart) {
-        setActualFixedOperatingCost(this.getTechnology()
-                .getFixedOperatingCost(timeOfPermitorBuildingStart + getActualLeadtime() + getActualPermittime())
+        setActualFixedOperatingCost(this.getTechnology().getFixedOperatingCost(
+                timeOfPermitorBuildingStart + getActualLeadtime() + getActualPermittime())
                 * getActualNominalCapacity());
     }
 
     public void calculateAndSetActualEfficiency(long timeOfPermitorBuildingStart) {
-        this.setActualEfficiency(this.getTechnology()
-                .getEfficiency(timeOfPermitorBuildingStart + getActualLeadtime() + getActualPermittime()));
+        this.setActualEfficiency(this.getTechnology().getEfficiency(
+                timeOfPermitorBuildingStart + getActualLeadtime() + getActualPermittime()));
     }
 
     public double calculateEmissionIntensity() {
@@ -520,8 +519,8 @@ public class PowerPlant {
         this.setDismantleTime(1000);
         this.calculateAndSetActualInvestedCapital(time);
         this.calculateAndSetActualFixedOperatingCosts(time);
-        this.setExpectedEndOfLife(
-                time + getActualPermittime() + getActualLeadtime() + getTechnology().getExpectedLifetime());
+        this.setExpectedEndOfLife(time + getActualPermittime() + getActualLeadtime()
+                + getTechnology().getExpectedLifetime());
     }
 
     @Transactional
@@ -579,9 +578,23 @@ public class PowerPlant {
         this.actualFixedOperatingCost = actualFixedOperatingCost;
     }
 
-    public IntermittentTechnologyNodeLoadFactor getIntermittentTechnologyNodeLoadFactor() {
+    IntermittentTechnologyNodeLoadFactor getIntermittentTechnologyNodeLoadFactor() {
         return intermittentTechnologyNodeLoadFactorRepository
                 .findIntermittentTechnologyNodeLoadFactorForNodeAndTechnology(this.getLocation(), this.getTechnology());
+    }
+
+    /**
+     * @param actualStorageContentEndOfYear
+     *            (for storage Power Plants) the actualStorageContentEndOfYear
+     *            to set
+     */
+
+    public double getActualStorageContentEndOfYear() {
+        return actualStorageContentEndOfYear;
+    }
+
+    public void setActualStorageContentEndOfYear(double actualStorageContentEndOfYear) {
+        this.actualStorageContentEndOfYear = actualStorageContentEndOfYear;
     }
 
 }

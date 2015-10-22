@@ -1,12 +1,12 @@
 /*******************************************************************************
  * Copyright 2012 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -29,11 +29,13 @@ import emlab.gen.domain.agent.EnergyConsumer;
 import emlab.gen.domain.agent.EnergyProducer;
 import emlab.gen.domain.agent.Government;
 import emlab.gen.domain.agent.StrategicReserveOperator;
+import emlab.gen.domain.agent.TargetInvestor;
 import emlab.gen.domain.market.CommodityMarket;
 import emlab.gen.domain.market.capacity.CapacityMarket;
 import emlab.gen.domain.market.electricity.ElectricitySpotMarket;
 import emlab.gen.domain.policy.renewablesupport.RenewableSupportFipScheme;
 import emlab.gen.repository.Reps;
+import emlab.gen.role.capacitymarket.ExportLimiterRole;
 import emlab.gen.role.capacitymarket.SimpleCapacityMarketMainRole;
 import emlab.gen.role.capacitymechanisms.ProcessAcceptedPowerPlantDispatchRoleinSR;
 import emlab.gen.role.capacitymechanisms.StrategicReserveOperatorRole;
@@ -45,7 +47,7 @@ import emlab.gen.role.investment.GenericInvestmentRole;
 import emlab.gen.role.market.ClearCommodityMarketRole;
 import emlab.gen.role.market.ClearIterativeCO2AndElectricitySpotMarketTwoCountryRole;
 import emlab.gen.role.market.CreatingFinancialReports;
-import emlab.gen.role.market.DetermineResidualLoadCurvesForTwoCountriesRole;
+import emlab.gen.role.market.DetermineResidualLoadCurvesForTwoCountriesWithStorageRole;
 import emlab.gen.role.market.ProcessAcceptedBidsRole;
 import emlab.gen.role.market.ProcessAcceptedPowerPlantDispatchRole;
 import emlab.gen.role.market.ReassignPowerPlantsToLongTermElectricityContractsRole;
@@ -70,7 +72,7 @@ import emlab.gen.role.renewablesupport.FeedInPremiumRole;
  *
  */
 @ScriptComponent
-public class DecarbonizationModelRole extends AbstractRole<DecarbonizationModel>implements Role<DecarbonizationModel> {
+public class DecarbonizationModelRole extends AbstractRole<DecarbonizationModel> implements Role<DecarbonizationModel> {
 
     @Autowired
     private PayCO2TaxRole payCO2TaxRole;
@@ -119,16 +121,17 @@ public class DecarbonizationModelRole extends AbstractRole<DecarbonizationModel>
     @Autowired
     MarketStabilityReserveRole marketStabilityReserveRole;
     @Autowired
-    private DetermineResidualLoadCurvesForTwoCountriesRole determineResidualLoadCurve;
-    @Autowired
-    private SimpleCapacityMarketMainRole simpleCapacityMarketMainRole;
+    private DetermineResidualLoadCurvesForTwoCountriesWithStorageRole determineResidualLoadCurve;
     @Autowired
     private CreatingFinancialReports creatingFinancialReports;
-
     @Autowired
     private FeedInPremiumRole feedInPremiumRole;
     @Autowired
     private ComputePremiumRole computePremiumRole;
+    @Autowired
+	private SimpleCapacityMarketMainRole simpleCapacityMarketMainRole;
+    @Autowired
+    private ExportLimiterRole exportLimiterRole;
 
     @Autowired
     Reps reps;
@@ -160,7 +163,7 @@ public class DecarbonizationModelRole extends AbstractRole<DecarbonizationModel>
         if (model.isRealRenewableDataImplemented())
             determineResidualLoadCurve.act(model);
 
-        // logger.warn(" 0. Dismantling & paying loans");
+        // logger.warn("  0. Dismantling & paying loans");
         // for (EnergyProducer producer :
         // reps.genericRepository.findAllAtRandom(EnergyProducer.class)) {
         // dismantlePowerPlantRole.act(producer);
@@ -205,8 +208,8 @@ public class DecarbonizationModelRole extends AbstractRole<DecarbonizationModel>
 
         /*
          * Run Simple Capacity Market (start from tick 1, due to initialization
-         * requirements- it needs values (revenues from electricity spot market)
-         * from previous tick
+         * requirements- it needs values (revenues from electricity sport
+         * market) from previous tick
          */
 
         if ((getCurrentTick() > 0) && (model.isSimpleCapacityMarketEnabled())) {
@@ -246,19 +249,18 @@ public class DecarbonizationModelRole extends AbstractRole<DecarbonizationModel>
 
         // timerMarket.reset();
         // timerMarket.start();
-        // logger.warn(" 2b. Creating market forecast");
+        // logger.warn("  2c. Creating market forecast");
         //
         // clearIterativeCO2AndElectricitySpotMarketTwoCountryRole
         // .makeCentralElectricityMarketForecastForTimeStep(getCurrentTick() +
         // model.getCentralForecastingYear());
         //
-        // logger.warn(" took: {} seconds.", timerMarket.seconds());
+        // logger.warn("        took: {} seconds.", timerMarket.seconds());
         //
         // timerMarket.reset();
 
         /*
-         * Clear electricity spot and CO2 markets and determine also the
-         * commitment of powerplants.
+         * Clear electricity spot and CO2 markets and determine also the commitment of powerplants.
          */
         timerMarket.reset();
         timerMarket.start();
@@ -427,7 +429,7 @@ public class DecarbonizationModelRole extends AbstractRole<DecarbonizationModel>
             // agentspring.simulation.Schedule.getSchedule().stop();
             // }
 
-            logger.warn("  7.5. Reassign LTCs");
+            logger.warn("  7. Reassign LTCs");
             timerMarket.reset();
             timerMarket.start();
             for (EnergyProducer producer : reps.genericRepository.findAllAtRandom(EnergyProducer.class)) {
@@ -446,15 +448,15 @@ public class DecarbonizationModelRole extends AbstractRole<DecarbonizationModel>
             timerMarket.reset();
             timerMarket.start();
             logger.warn("  8. Delete old nodes in year {}.", (getCurrentTick() - model.getDeletionAge()));
-            reps.bidRepository
-                    .delete(reps.bidRepository.findAllBidsForForTime(getCurrentTick() - model.getDeletionAge()));
-            reps.cashFlowRepository.delete(
-                    reps.cashFlowRepository.findAllCashFlowsForForTime(getCurrentTick() - model.getDeletionAge()));
+            reps.bidRepository.delete(reps.bidRepository.findAllBidsForForTime(getCurrentTick()
+                    - model.getDeletionAge()));
+            reps.cashFlowRepository.delete(reps.cashFlowRepository.findAllCashFlowsForForTime(getCurrentTick()
+                    - model.getDeletionAge()));
             reps.powerPlantRepository.delete(reps.powerPlantRepository
-                    .findAllPowerPlantsDismantledBeforeTick(getCurrentTick() - model.getDeletionAge()));
-            reps.powerPlantDispatchPlanRepository
-                    .delete(reps.powerPlantDispatchPlanRepository.findAllPowerPlantDispatchPlansForTime(
-                            getCurrentTick() + model.getCentralForecastingYear() - 1, true));
+                    .findAllPowerPlantsDismantledBeforeTick(getCurrentTick() - 1 - model.getDeletionAge()));
+            reps.powerPlantDispatchPlanRepository.delete(reps.powerPlantDispatchPlanRepository
+                    .findAllPowerPlantDispatchPlansForTime(getCurrentTick() + model.getCentralForecastingYear() - 1,
+                            true));
             reps.financialPowerPlantReportRepository.delete(reps.financialPowerPlantReportRepository
                     .findAllFinancialPowerPlantReportsForTime(getCurrentTick() - 5 - model.getDeletionAge()));
             timerMarket.stop();

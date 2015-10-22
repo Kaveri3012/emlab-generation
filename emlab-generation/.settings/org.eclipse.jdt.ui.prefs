@@ -83,7 +83,14 @@ sp_cleanup.convert_to_enhanced_for_loop=false
 sp_cleanup.correct_indentation=true
 sp_cleanup.format_source_code=true
 sp_cleanup.format_source_code_changes_only=false
+<<<<<<< HEAD
 sp_cleanup.insert_inferred_type_arguments=false
+=======
+<<<<<<< HEAD
+sp_cleanup.insert_inferred_type_arguments=false
+=======
+>>>>>>> 16ded9284d5fb4092657b5fd2201a76b372448cb
+>>>>>>> Sophie/feature/SophieCM
 sp_cleanup.make_local_variable_final=false
 sp_cleanup.make_parameters_final=false
 sp_cleanup.make_private_fields_final=true

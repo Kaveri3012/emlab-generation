@@ -227,6 +227,8 @@ public class Government extends DecarbonizationAgent implements Agent {
         this.adaptiveCapAdjustmentBasedOnCapNotActualEmissions = adaptiveCapAdjustmentBasedOnCapNotActualEmissions;
     }
 
+<<<<<<< Temporary merge branch 1
+=======
 
     public boolean isAdaptiveCapAdjustmentRelativeToNonSubsidisedProduction() {
         return adaptiveCapAdjustmentRelativeToNonSubsidisedProduction;
@@ -246,4 +248,5 @@ public class Government extends DecarbonizationAgent implements Agent {
         this.stabilityReserveHasOneYearDelayInsteadOfTwoYearDelay = stabilityReserveHasOneYearDelayInsteadOfTwoYearDelay;
     }
 
+>>>>>>> Temporary merge branch 2
 }

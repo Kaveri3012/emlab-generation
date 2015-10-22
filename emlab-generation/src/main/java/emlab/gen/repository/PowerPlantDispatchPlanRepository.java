@@ -33,7 +33,7 @@ import emlab.gen.domain.technology.PowerPlant;
  *
  * @author JCRichstein
  * @author ejlchappin
- *
+ * 
  */
 
 @Repository
@@ -110,10 +110,12 @@ public interface PowerPlantDispatchPlanRepository extends GraphRepository<PowerP
             @Param("producer") EnergyProducer producer, @Param("time") long time, @Param("forecast") boolean forecast);
 
     @Query(value = "sum=0;ppdps=g.v(producer).out('BIDDER').propertyFilter('time', FilterPipe.Filter.EQUAL, time).propertyFilter('status', FilterPipe.Filter.GREATER_THAN_EQUAL , 2).propertyFilter('forecast', FilterPipe.Filter.EQUAL, forecast);"
+
             + "for(ppdp in ppdps){"
             + "totalAmount = ppdp.getProperty('acceptedAmount') + ppdp.getProperty('capacityLongTermContract');"
             + "hoursInSegment = ppdp.out('SEGMENT_DISPATCHPLAN').next().getProperty('lengthInHours');"
             + "production = totalAmount * hoursInSegment;" + "sum = sum + production};" + " return sum;", type = QueryType.Gremlin)
+
     public double calculateTotalProductionForEnergyProducerForTime(@Param("producer") EnergyProducer producer,
             @Param("time") long time, @Param("forecast") boolean forecast);
 
@@ -152,6 +154,10 @@ public interface PowerPlantDispatchPlanRepository extends GraphRepository<PowerP
     // findAllAcceptedPowerPlantDispatchPlansForEnergyProducerForTimeAndSegment(
     // @Param("segment") Segment segment, @Param("producer") EnergyProducer
     // producer, @Param("time") long time);
+
+    @Query(value = "result = g.v(plant).in('POWERPLANT_DISPATCHPLAN').as('x').out('SEGMENT_DISPATCHPLAN').idFilter(segment, FilterPipe.Filter.EQUAL).back('x').propertyFilter('time', FilterPipe.Filter.EQUAL, time); if(!result.hasNext()){return null;} else{return result.next();}", type = QueryType.Gremlin)
+    public PowerPlantDispatchPlan findOnePowerPlantDispatchPlanForPowerPlantForSegmentForTime(
+            @Param("plant") PowerPlant plant, @Param("segment") Segment segment, @Param("time") long time);
 }
 
 // package emlab.gen.repository;
