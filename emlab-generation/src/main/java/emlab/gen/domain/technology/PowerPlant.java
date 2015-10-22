@@ -131,14 +131,6 @@ public class PowerPlant {
         return false;
     }
 
-    public boolean isHasFeedInPremiumContract() {
-        return hasFeedInPremiumContract;
-    }
-
-    public void setHasFeedInPremiumContract(boolean hasFeedInPremiumContract) {
-        this.hasFeedInPremiumContract = hasFeedInPremiumContract;
-    }
-
     public boolean isExpectedToBeOperational(long time) {
 
         double finishedConstruction = getConstructionStartTime() + calculateActualPermittime()
@@ -430,20 +422,20 @@ public class PowerPlant {
      * @param timeOfPermitorBuildingStart
      */
     public void calculateAndSetActualInvestedCapital(long timeOfPermitorBuildingStart) {
-        setActualInvestedCapital(this.getTechnology().getInvestmentCost(
-                timeOfPermitorBuildingStart + getActualLeadtime() + getActualPermittime())
+        setActualInvestedCapital(this.getTechnology()
+                .getInvestmentCost(timeOfPermitorBuildingStart + getActualLeadtime() + getActualPermittime())
                 * getActualNominalCapacity());
     }
 
     public void calculateAndSetActualFixedOperatingCosts(long timeOfPermitorBuildingStart) {
-        setActualFixedOperatingCost(this.getTechnology().getFixedOperatingCost(
-                timeOfPermitorBuildingStart + getActualLeadtime() + getActualPermittime())
+        setActualFixedOperatingCost(this.getTechnology()
+                .getFixedOperatingCost(timeOfPermitorBuildingStart + getActualLeadtime() + getActualPermittime())
                 * getActualNominalCapacity());
     }
 
     public void calculateAndSetActualEfficiency(long timeOfPermitorBuildingStart) {
-        this.setActualEfficiency(this.getTechnology().getEfficiency(
-                timeOfPermitorBuildingStart + getActualLeadtime() + getActualPermittime()));
+        this.setActualEfficiency(this.getTechnology()
+                .getEfficiency(timeOfPermitorBuildingStart + getActualLeadtime() + getActualPermittime()));
     }
 
     public double calculateEmissionIntensity() {
@@ -519,8 +511,8 @@ public class PowerPlant {
         this.setDismantleTime(1000);
         this.calculateAndSetActualInvestedCapital(time);
         this.calculateAndSetActualFixedOperatingCosts(time);
-        this.setExpectedEndOfLife(time + getActualPermittime() + getActualLeadtime()
-                + getTechnology().getExpectedLifetime());
+        this.setExpectedEndOfLife(
+                time + getActualPermittime() + getActualLeadtime() + getTechnology().getExpectedLifetime());
     }
 
     @Transactional
