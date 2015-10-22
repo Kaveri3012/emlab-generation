@@ -38,8 +38,8 @@ import emlab.gen.util.GeometricTrendRegression;
  */
 
 @RoleComponent
-public class CalculateRenewableTargetForTenderRole extends AbstractRole<RenewableSupportSchemeTender> implements
-        Role<RenewableSupportSchemeTender> {
+public class CalculateRenewableTargetForTenderRole extends AbstractRole<RenewableSupportSchemeTender>
+        implements Role<RenewableSupportSchemeTender> {
 
     @Autowired
     Reps reps;
@@ -57,8 +57,9 @@ public class CalculateRenewableTargetForTenderRole extends AbstractRole<Renewabl
         ElectricitySpotMarket market = reps.marketRepository.findElectricitySpotMarketForZone(zone);
 
         // get demand factor
-        demandFactor = predictDemandForElectricitySpotMarket(market, scheme.getRegulator()
-                .getNumberOfYearsLookingBackToForecastDemand(), scheme.getFutureTenderOperationStartTime());
+        demandFactor = predictDemandForElectricitySpotMarket(market,
+                scheme.getRegulator().getNumberOfYearsLookingBackToForecastDemand(),
+                scheme.getFutureTenderOperationStartTime());
 
         logger.warn("demandGrowth; " + demandFactor);
 
@@ -66,8 +67,8 @@ public class CalculateRenewableTargetForTenderRole extends AbstractRole<Renewabl
         RenewableTargetForTender target = reps.renewableTargetForTenderRepository
                 .findRenewableTargetForTenderByRegulator(scheme.getRegulator());
 
-        targetFactor = target.getYearlyRenewableTargetTimeSeries().getValue(
-                getCurrentTick() + scheme.getFutureTenderOperationStartTime());
+        targetFactor = target.getYearlyRenewableTargetTimeSeries()
+                .getValue(getCurrentTick() + scheme.getFutureTenderOperationStartTime());
         logger.warn("targetFactor; " + targetFactor);
 
         // get totalLoad in MWh
@@ -90,81 +91,24 @@ public class CalculateRenewableTargetForTenderRole extends AbstractRole<Renewabl
         // calculate expected generation, and subtract that from annual
         // target.
         // will be ActualTarget
-        double expectedGenerationPerTechnology = 0d;
         double totalExpectedGeneration = 0d;
+        double expectedGenerationPerTechnology = 0d;
+        double expectedGenerationPerPlant = 0d;
         long numberOfSegments = reps.segmentRepository.count();
         // logger.warn("numberOfsegments: " + numberOfSegments);
-        double factor = 0d;
-
-        // double expectedTechnologyCapacity = reps.powerPlantRepository
-        // .calculateCapacityOfOperationalPowerPlantsByTechnology(technology,
-        // scheme.getFutureTenderOperationStartTime());
-        //
-        // // logger.warn("expectedTechnologyCapacity is: " +
-        // // expectedTechnologyCapacity);
-        //
-        // for (PowerPlant plant :
-        // reps.powerPlantRepository.findOperationalPowerPlantsByTechnology(technology,
-        // scheme.getFutureTenderOperationStartTime())) {
-        //
-        //
-
         for (PowerGeneratingTechnology technology : scheme.getPowerGeneratingTechnologiesEligible()) {
-            // logger.warn("technology is: " + technology);
-            double fullLoadHours = 0d;
-
-            // calculate the expected technology capacity based on existing
-            // capacity and capacity being installed between now and the
-            // futureTenderOperationsStarttime
-            double expectedTechnologyCapacity = reps.powerPlantRepository
-                    .calculateCapacityOfExpectedOperationalPowerPlantsInMarketAndTechnology(market, technology,
-                            scheme.getFutureTenderOperationStartTime());
-
-            for (PowerPlant plant : reps.powerPlantRepository.findExpectedOperationalPowerPlantsInMarketByTechnology(
-                    market, technology, scheme.getFutureTenderOperationStartTime())) {
-                // logger.warn("plant is " + plant);
-                fullLoadHours = 0d;
+            expectedGenerationPerTechnology = 0d;
+            for (PowerPlant plant : reps.powerPlantRepository.findOperationalPowerPlantsByMarketAndTechnology(market,
+                    technology, getCurrentTick())) {
+                expectedGenerationPerPlant = 0d;
                 for (Segment segment : reps.segmentRepository.findAll()) {
-                    // logger.warn("Segment " + segment);
-                    double fullLoadHoursPerSegment = 0d;
-
-                    if (technology.isIntermittent()) {
-                        factor = plant.getIntermittentTechnologyNodeLoadFactor().getLoadFactorForSegment(segment);
-
-                    } else {
-                        double segmentID = segment.getSegmentID();
-                        // logger.warn("segmentID: " + segmentID);
-                        double min = technology.getPeakSegmentDependentAvailability();
-                        // logger.warn("min: " + min);
-                        double max = technology.getBaseSegmentDependentAvailability();
-                        // logger.warn("max: " + max);
-                        double segmentPortion = (numberOfSegments - segmentID) / (numberOfSegments - 1);
-                        // logger.warn("segmentPortion: " + segmentPortion);
-
-                        // start counting at 1
-
-                        double range = max - min;
-                        // logger.warn("range: " + range);
-                        factor = max - segmentPortion * range;
-                        // logger.warn("factor: " + factor);
-
-                    }
-
-                    fullLoadHoursPerSegment = factor * segment.getLengthInHours();
-                    // logger.warn("fullLoadHoursPerSegment: " +
-                    // fullLoadHoursPerSegment);
-                    fullLoadHours += fullLoadHoursPerSegment;
-                    // logger.warn("fullLoadHours: " + fullLoadHours);
-
+                    double availablePlantCapacity = plant.getAvailableCapacity(getCurrentTick(), segment,
+                            numberOfSegments);
+                    double lengthOfSegmentInHours = segment.getLengthInHours();
+                    expectedGenerationPerPlant += availablePlantCapacity * lengthOfSegmentInHours;
                 }
-
+                expectedGenerationPerTechnology += expectedGenerationPerPlant;
             }
-
-            expectedGenerationPerTechnology = fullLoadHours * expectedTechnologyCapacity;
-
-            // logger.warn("expectedGenerationPerTechnology: " +
-            // expectedGenerationPerTechnology);
-
             totalExpectedGeneration += expectedGenerationPerTechnology;
 
         }

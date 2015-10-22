@@ -55,7 +55,7 @@
 	<!-- Renewable Tender Scheme NL -->
 	<bean id="renewableSupportSchemeNL"
 		class="emlab.gen.domain.policy.renewablesupport.RenewableSupportSchemeTender"
-		p:name="RenewableTenderNL" p:futureTenderOperationStartTime="5"
+		p:name="RenewableTenderNL" p:futureTenderOperationStartTime="1"
 		p:supportSchemeDuration="10">
 		<property name="regulator" ref="regulatorNL" />
 		<property name="powerGeneratingTechnologiesEligible">
@@ -72,7 +72,7 @@
 	<!-- Renewable Tender Scheme DE -->
 	<bean id="renewableSupportSchemeDE"
 		class="emlab.gen.domain.policy.renewablesupport.RenewableSupportSchemeTender"
-		p:name="RenewableTenderDE" p:futureTenderOperationStartTime="5"
+		p:name="RenewableTenderDE" p:futureTenderOperationStartTime="1"
 		p:supportSchemeDuration="10">
 		<property name="regulator" ref="regulatorDE" />
 		<property name="powerGeneratingTechnologiesEligible">
