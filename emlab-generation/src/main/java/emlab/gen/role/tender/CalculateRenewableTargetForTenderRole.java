@@ -104,8 +104,8 @@ public class CalculateRenewableTargetForTenderRole extends AbstractRole<Renewabl
                 expectedGenerationPerPlant = 0d;
                 noOfPlants++;
                 for (Segment segment : reps.segmentRepository.findAll()) {
-                    double availablePlantCapacity = plant.getAvailableCapacity(getCurrentTick(), segment,
-                            numberOfSegments);
+                    double availablePlantCapacity = plant.getAvailableCapacity(
+                            scheme.getFutureTenderOperationStartTime(), segment, numberOfSegments);
                     double lengthOfSegmentInHours = segment.getLengthInHours();
                     expectedGenerationPerPlant += availablePlantCapacity * lengthOfSegmentInHours;
                 }
