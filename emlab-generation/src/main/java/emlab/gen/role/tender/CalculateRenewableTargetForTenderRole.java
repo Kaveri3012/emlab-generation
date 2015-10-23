@@ -100,7 +100,7 @@ public class CalculateRenewableTargetForTenderRole extends AbstractRole<Renewabl
         for (PowerGeneratingTechnology technology : scheme.getPowerGeneratingTechnologiesEligible()) {
             expectedGenerationPerTechnology = 0d;
             for (PowerPlant plant : reps.powerPlantRepository.findOperationalPowerPlantsByMarketAndTechnology(market,
-                    technology, getCurrentTick())) {
+                    technology, scheme.getFutureTenderOperationStartTime())) {
                 expectedGenerationPerPlant = 0d;
                 noOfPlants++;
                 for (Segment segment : reps.segmentRepository.findAll()) {
