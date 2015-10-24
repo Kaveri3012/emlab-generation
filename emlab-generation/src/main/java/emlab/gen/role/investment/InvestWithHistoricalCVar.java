@@ -345,7 +345,7 @@ public class InvestWithHistoricalCVar<T extends EnergyProducer> extends GenericI
                             // if (expectedBaseCost > 0d)
                             supportFromFip = (expectedBaseCost * expectedGeneration) - expectedRevenue;
 
-                        double operatingProfit = expectedGrossProfit - fixedOMCost;
+                        double operatingProfit = expectedGrossProfit - fixedOMCost + supportFromFip;
 
                         double historicalCvarOperatingProfit = cVarOfHistoricalGrossProfits - fixedOMCost;
 

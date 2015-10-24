@@ -570,7 +570,7 @@ public class PowerPlant {
         this.actualFixedOperatingCost = actualFixedOperatingCost;
     }
 
-    IntermittentTechnologyNodeLoadFactor getIntermittentTechnologyNodeLoadFactor() {
+    public IntermittentTechnologyNodeLoadFactor getIntermittentTechnologyNodeLoadFactor() {
         return intermittentTechnologyNodeLoadFactorRepository
                 .findIntermittentTechnologyNodeLoadFactorForNodeAndTechnology(this.getLocation(), this.getTechnology());
     }

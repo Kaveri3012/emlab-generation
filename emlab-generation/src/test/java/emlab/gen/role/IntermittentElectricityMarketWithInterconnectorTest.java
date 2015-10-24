@@ -260,10 +260,6 @@ public class IntermittentElectricityMarketWithInterconnectorTest {
         windTech.setName("WindTech");
         windTech.setIntermittent(true);
 
-<<<<<<< Temporary merge branch 1
-=======
-
->>>>>>> Temporary merge branch 2
         coalTech.persist();
         gasTech.persist();
         windTech.persist();

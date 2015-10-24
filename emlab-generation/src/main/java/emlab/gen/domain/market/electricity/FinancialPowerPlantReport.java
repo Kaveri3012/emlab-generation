@@ -63,6 +63,8 @@ public class FinancialPowerPlantReport {
 
     double production;
 
+    double feedInPremiumRevenue;
+
     int powerPlantStatus;
 
     public static final int UNDERCONSTRUCTION = 0;
@@ -188,6 +190,14 @@ public class FinancialPowerPlantReport {
 
     public void setPowerPlantStatus(int powerPlantStatus) {
         this.powerPlantStatus = powerPlantStatus;
+    }
+
+    public double getFeedInPremiumRevenue() {
+        return feedInPremiumRevenue;
+    }
+
+    public void setFeedInPremiumRevenue(double feedInPremiumRevenue) {
+        this.feedInPremiumRevenue = feedInPremiumRevenue;
     }
 
 }
