@@ -197,6 +197,11 @@ public class InvestInPowerGenerationTechnologiesStandard<T extends EnergyProduce
 
                 PowerPlant plant = new PowerPlant();
                 plant.specifyNotPersist(getCurrentTick(), agent, node, technology);
+
+                // logger.warn("Standard 198 - Agent " + agent +
+                // " looking at technology at tick " + getCurrentTick()
+                // + " in tech " + technology);
+
                 // if too much capacity of this technology in the pipeline (not
                 // limited to the 5 years)
                 double expectedInstalledCapacityOfTechnology = reps.powerPlantRepository
@@ -402,11 +407,13 @@ public class InvestInPowerGenerationTechnologiesStandard<T extends EnergyProduce
         }
 
         if (bestTechnology != null) {
-            // logger.warn("Agent {} invested in technology {} at tick " +
-            // getCurrentTick(), agent, bestTechnology);
 
             PowerPlant plant = new PowerPlant();
             plant.specifyAndPersist(getCurrentTick(), agent, bestNode, bestTechnology);
+
+            logger.warn("Standard 415 - Agent " + agent + " invested in technology at tick " + getCurrentTick()
+                    + " in tech " + bestTechnology);
+
             PowerPlantManufacturer manufacturer = reps.genericRepository.findFirst(PowerPlantManufacturer.class);
             BigBank bigbank = reps.genericRepository.findFirst(BigBank.class);
 
@@ -579,6 +586,7 @@ public class InvestInPowerGenerationTechnologiesStandard<T extends EnergyProduce
                         double targetDifference = pggt.getTrend().getValue(time) - expectedTechnologyCapacity;
                         if (targetDifference > 0) {
                             PowerPlant plant = new PowerPlant();
+
                             plant.specifyNotPersist(getCurrentTick(), new EnergyProducer(),
                                     reps.powerGridNodeRepository.findFirstPowerGridNodeByElectricitySpotMarket(market),
                                     pggt.getPowerGeneratingTechnology());
@@ -586,6 +594,10 @@ public class InvestInPowerGenerationTechnologiesStandard<T extends EnergyProduce
                             double plantMarginalCost = determineExpectedMarginalCost(plant, fuelPrices, co2price);
                             marginalCostMap.put(plant, plantMarginalCost);
                             capacitySum += targetDifference;
+
+                            logger.warn("Standard 587 - Agent " + targetInvestor + " invested in technology at tick "
+                                    + getCurrentTick() + " in tech " + pggt.getPowerGeneratingTechnology());
+
                         }
                     }
                 } else {
@@ -602,6 +614,7 @@ public class InvestInPowerGenerationTechnologiesStandard<T extends EnergyProduce
                                     .getTrend().getValue(investmentTimeStep - 1));
                         }
                         if (expectedTechnologyAddition > 0) {
+
                             PowerPlant plant = new PowerPlant();
                             plant.specifyNotPersist(getCurrentTick(), new EnergyProducer(),
                                     reps.powerGridNodeRepository.findFirstPowerGridNodeByElectricitySpotMarket(market),
@@ -610,6 +623,9 @@ public class InvestInPowerGenerationTechnologiesStandard<T extends EnergyProduce
                             double plantMarginalCost = determineExpectedMarginalCost(plant, fuelPrices, co2price);
                             marginalCostMap.put(plant, plantMarginalCost);
                             capacitySum += expectedTechnologyAddition;
+
+                            logger.warn("Standard 617 - Agent " + targetInvestor + " invested in technology at tick "
+                                    + getCurrentTick() + " in tech " + pggt.getPowerGeneratingTechnology());
                         }
                     }
                 }

@@ -83,9 +83,6 @@ public class ClearRenewableTenderRole extends AbstractRole<Regulator> implements
         // by price
         for (TenderBid currentTenderBid : sortedTenderBidsbyPriceAndZone) {
 
-            logger.warn("checking bid: " + currentTenderBid);
-            // logger.warn("bid is: " + sortedTenderBidsbyPrice);
-
             // if the tender is not cleared yet, it collects complete bids
             if (isTheTenderCleared == false) {
                 if (tenderQuota - (sumOfTenderBidQuantityAccepted + currentTenderBid.getAmount()) >= -clearingEpsilon) {
@@ -96,6 +93,8 @@ public class ClearRenewableTenderRole extends AbstractRole<Regulator> implements
                     logger.warn("bidder; " + currentTenderBid.getBidder());
                     logger.warn("bidAmount; " + currentTenderBid.getAmount());
                     logger.warn("acceptedSubsidyPrice; " + acceptedSubsidyPrice);
+                    logger.warn("Technology; " + currentTenderBid.getTechnology());
+                    logger.warn("Status; " + currentTenderBid.getStatus());
 
                     sumOfTenderBidQuantityAccepted = sumOfTenderBidQuantityAccepted + currentTenderBid.getAmount();
 
@@ -116,6 +115,8 @@ public class ClearRenewableTenderRole extends AbstractRole<Regulator> implements
                     logger.warn("PARTLYbidder; " + currentTenderBid.getBidder());
                     logger.warn("PARTLYbidAmount; " + currentTenderBid.getAmount());
                     logger.warn("PARTLYacceptedSubsidyPrice; " + acceptedSubsidyPrice);
+                    logger.warn("PARTLYTechnology; " + currentTenderBid.getTechnology());
+                    logger.warn("PARTLYStatus; " + currentTenderBid.getStatus());
 
                     sumOfTenderBidQuantityAccepted = sumOfTenderBidQuantityAccepted
                             + currentTenderBid.getAcceptedAmount();
@@ -123,6 +124,7 @@ public class ClearRenewableTenderRole extends AbstractRole<Regulator> implements
                     logger.warn("PARTLYsumOfTenderBidQuantityAccepted; " + sumOfTenderBidQuantityAccepted);
 
                     isTheTenderCleared = true;
+
                 }
                 // the tenderQuota is reached and the bids after that are not
                 // accepted
@@ -130,6 +132,7 @@ public class ClearRenewableTenderRole extends AbstractRole<Regulator> implements
             } else {
                 currentTenderBid.setStatus(Bid.FAILED);
                 currentTenderBid.setAcceptedAmount(0);
+
             }
 
             currentTenderBid.persist();
@@ -160,6 +163,10 @@ public class ClearRenewableTenderRole extends AbstractRole<Regulator> implements
                         .getTechnology().getDepreciationTime(), getCurrentTick(), plant);
                 // Create the loan
                 plant.createOrUpdateLoan(loan);
+
+                logger.warn("ClearingTender 148 - Agent " + bidder + " at tick " + getCurrentTick() + " in tech "
+                        + currentTenderBid.getTechnology() + " with plant " + plant + " in node "
+                        + currentTenderBid.getPowerGridNode() + " in zone " + currentTenderBid.getZone());
 
             }
         } // FOR Loop ends here

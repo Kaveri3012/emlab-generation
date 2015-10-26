@@ -1,5 +1,5 @@
 #File and folder initiation
-nameFile <- "InvestmentHorizon5Years"
+nameFile <- "InvestmentCheck5"
 analysisFolder <- "~/Desktop/emlabGen/output/"
 analysisFolder <- paste(analysisFolder, nameFile, "/", sep="")
 analysisFolder
@@ -14,6 +14,7 @@ bigDF <- read.csv(analysisFile)
 drops <- c("CapacityinMWinA_CcgtCCS", "CapacityinMWinA_CoalPscCSS","CapacityinMWinA_HydroPower","CapacityinMWinA_IgccCCS","CapacityinMWinA_Igcc")
 drops <- c("CapacityinMWinB_CcgtCCS", "CapacityinMWinB_CoalPscCSS","CapacityinMWinB_HydroPower","CapacityinMWinB_IgccCCS","CapacityinMWinA_Igcc")
 
+
 #Clean csv-file
 library(stringr)
 #bigDF$runId <- str_replace(bigDF$runId,"\\..*","")
@@ -27,6 +28,7 @@ colnames(bigDF) = gsub("\\.", "_", colnames(bigDF))
 summary(bigDF)
 bigDF$tick
 
+
 library(gridExtra)
 library(TeachingDemos)
 library(grid)
@@ -36,11 +38,36 @@ library(reshape2)
 # bigDF$tick <- bigDF$tick + 2015
 # bigDF$tick
 
-#Prices
+
+# System Costs
+# We define the system cost in all scenario as the payments that leave
+# the circle of consumers, producers and the government, or equivalently as the sum of
+# fixed and variable costs over the entire simulation period and over all power plants
+
+# consumer costs (expenditures)
+ConsumerCostsA <- bigDF$ConsumerExpenditure_Country_A_electricity_spot_market 
+ProducerCostsA <- bigDF$CountryAProdCosts_Fixed_O_M + 
+  bigDF$CountryAProdCosts_Loan + 
+  bigDF$CountryAProdCosts_Commodity + 
+  bigDF$CountryAProdCosts_Downpayment
+GovernmentCostsA <- bigDF$CountryAProdFinances_Tender_Subsidy
+
+SystemCostsA <- ConsumerCostsA + ProducerCostsA + GovernmentCostsA
+
+ConsumerCostsB <- bigDF$ConsumerExpenditure_Country_B_electricity_spot_market 
+ProducerCostsB <- bigDF$CountryBProdCosts_Fixed_O_M + 
+  bigDF$CountryBProdCosts_Loan + 
+  bigDF$CountryBProdCosts_Commodity + 
+  bigDF$CountryBProdCosts_Downpayment
+GovernmentCostsB <- bigDF$CountryBProdFinances_Tender_Subsidy
+
+SystemCostsB <- ConsumerCostsB + ProducerCostsB + GovernmentCostsB
+
+
+
 # Average electricity wholesale price in country
-# electricity price per segment
 AverageElectricityPriceCountryAplot = ggplot(data=bigDF, aes(x=tick, y=Avg_El_PricesinEURpMWh_Country_A, group=runNumber)) + 
-  geom_line() + (aes(colour = runNumber)) +
+  geom_smooth() + (aes(colour = runNumber)) +
   xlab("Year") +  
   ylab("Eur/MWh") + 
   ggtitle("Average Electricity Prices \n The Netherlands") #give the plot a title
@@ -48,7 +75,7 @@ plot(AverageElectricityPriceCountryAplot)
 ggsave(filename = paste(filePrefix, "Avg_el_price_A.png", sep=""))
 
 AverageElectricityPriceCountryBplot = ggplot(data=bigDF, aes(x=tick, y=Avg_El_PricesinEURpMWh_Country_B, group=runNumber)) + 
-  geom_line() +  (aes(colour = runNumber)) + 
+  geom_smooth() +  (aes(colour = runNumber)) + 
   xlab("Year") +  
   ylab("Eur/MWh") + 
   ggtitle("Average Electricity Prices \n Germany") #give the plot a title
@@ -57,7 +84,7 @@ ggsave(filename = paste(filePrefix, "Avg_el_price_B.png", sep=""))
 
 #Tender Clearing Prices
 tenderClearingPriceCountryAplot = ggplot(data=bigDF, aes(x=tick, y=tenderClearingPrice_Country_A, group=runNumber)) + 
-  geom_line() +  (aes(colour = runNumber)) + 
+  geom_smooth() +  (aes(colour = runNumber)) + 
   xlab("Year") +  
   ylab("Eur/MWh") + 
   ggtitle("Tender Clearing Prices \n Netherlands") #give the plot a title
@@ -72,7 +99,30 @@ tenderClearingPriceCountryBplot = ggplot(data=bigDF, aes(x=tick, y=tenderClearin
 plot(tenderClearingPriceCountryBplot)
 ggsave(filename = paste(filePrefix, "tender_clearing_price_B.png", sep=""))
 
-bigDF$tenderClearingPrice_Country_B
+#Tender Clearing Volumes
+tenderClearingVolumeCountryAplot = ggplot(data=bigDF, aes(x=tick, y=tenderClearingVolume_Country_A, group=runNumber)) + 
+  geom_line() +  (aes(colour = runNumber)) + 
+  xlab("Year") +  
+  ylab("MWh") + 
+  ggtitle("Tender Clearing Volumes \n Netherlands") #give the plot a title
+plot(tenderClearingVolumeCountryAplot)
+ggsave(filename = paste(filePrefix, "tender_clearing_volume_A.png", sep=""))
+
+tenderClearingVolumeCountryBplot = ggplot(data=bigDF, aes(x=tick, y=tenderClearingVolume_Country_B, group=runNumber)) + 
+  geom_line() +  (aes(colour = runNumber)) + 
+  xlab("Year") +  
+  ylab("MWh") + 
+  ggtitle("Tender Clearing Volumes \n Germany") #give the plot a title
+plot(tenderClearingVolumeCountryBplot)
+ggsave(filename = paste(filePrefix, "tender_clearing_volume_B.png", sep=""))
+
+#Tender Clearing price*volume
+tenderClearingMoneyA <- bigDF$tenderClearingPrice_Country_A * bigDF$tenderClearingVolume_Country_A
+tenderClearingMoneyB <- bigDF$tenderClearingPrice_Country_B * bigDF$tenderClearingVolume_Country_B
+
+write.table(tenderClearingMoneyA, file = "tenderClearingMoneyA.csv",row.names=FALSE, na="",col.names=FALSE, sep=",")
+write.table(tenderClearingMoneyB, file = "tenderClearingMoneyB.csv",row.names=FALSE, na="",col.names=FALSE, sep=",")
+
 
 # bigDF$diffPriceAB <- bigDF$Avg_El_PricesinEURpMWh_Country_A - bigDF$Avg_El_PricesinEURpMWh_Country_B
 # bigDF$diffPriceAB
@@ -85,43 +135,49 @@ bigDF$tenderClearingPrice_Country_B
 # 
 # ggsave(filename = paste(filePrefix, "Diff_ElectricityPriceAverageNL_DE.png", sep=""))
 
-
-# 
 # ElectricityPricesAB <-multiplot(AverageElectricityPriceCountryAplot, AverageElectricityPriceCountryBplot, diff_el_price_AB, cols=2)
 # ggsave(filename = paste(filePrefix, "ElectricityPriceAverageNL_DE.png", sep=""))
 
 #Relative Generation Share of Renewables
 renewableGenerationA <-  
-  bigDF$GenerationTypesPerTechnology_Photovoltaic + bigDF$GenerationTypesPerTechnology_Wind + bigDF$GenerationTypesPerTechnology_Biomass + 
-  bigDF$GenerationTypesPerTechnology_HydroPower + bigDF$GenerationTypesPerTechnology_Biogas + bigDF$GenerationTypesPerTechnology_WindOffshore 
+  bigDF$GenerationinMWhCountryA_Photovoltaic + bigDF$GenerationinMWhCountryA_Wind + bigDF$GenerationinMWhCountryA_Biomass + 
+  bigDF$GenerationinMWhCountryA_HydroPower + bigDF$GenerationinMWhCountryA_Biogas + bigDF$GenerationinMWhCountryA_WindOffshore 
 
-totalGenerationA  <-bigDF$GenerationTypesPerTechnology_IGCC + 
-  bigDF$GenerationTypesPerTechnology_Photovoltaic + bigDF$GenerationTypesPerTechnology_Wind + bigDF$GenerationTypesPerTechnology_CcgtCCS + 
-  bigDF$GenerationTypesPerTechnology_CoalPscCSS + bigDF$GenerationTypesPerTechnology_Lignite + bigDF$GenerationTypesPerTechnology_Biomass + 
-  bigDF$GenerationTypesPerTechnology_HydroPower + bigDF$GenerationTypesPerTechnology_IgccCCS + bigDF$GenerationTypesPerTechnology_CoalPSC + 
-  bigDF$GenerationTypesPerTechnology_Biogas + bigDF$GenerationTypesPerTechnology_CCGT + bigDF$GenerationTypesPerTechnology_WindOffshore + 
-  bigDF$GenerationTypesPerTechnology_Nuclear + bigDF$GenerationTypesPerTechnology_OCGT
-
-renewableGenerationShareCountryA <-renewableGenerationA/totalGenerationA
+totalGenerationA  <-bigDF$GenerationinMWhCountryA_IGCC + 
+  bigDF$GenerationinMWhCountryA_Photovoltaic + bigDF$GenerationinMWhCountryA_Wind + bigDF$GenerationinMWhCountryA_CcgtCCS + 
+  bigDF$GenerationinMWhCountryA_CoalPscCSS + bigDF$GenerationinMWhCountryA_Lignite + bigDF$GenerationinMWhCountryA_Biomass + 
+  bigDF$GenerationinMWhCountryA_HydroPower + bigDF$GenerationinMWhCountryA_IgccCCS + bigDF$GenerationinMWhCountryA_CoalPSC + 
+  bigDF$GenerationinMWhCountryA_Biogas + bigDF$GenerationinMWhCountryA_CCGT + bigDF$GenerationinMWhCountryA_WindOffshore + 
+  bigDF$GenerationinMWhCountryA_Nuclear + bigDF$GenerationinMWhCountryA_OCGT
 
 renewableGenerationB <-  
-  bigDF$GenerationTypesPerTechnology_Photovoltaic + bigDF$GenerationTypesPerTechnology_Wind + bigDF$GenerationTypesPerTechnology_Biomass + 
-  bigDF$GenerationTypesPerTechnology_HydroPower + bigDF$GenerationTypesPerTechnology_Biogas + bigDF$GenerationTypesPerTechnology_WindOffshore 
+  bigDF$GenerationinMWhCountryB_Photovoltaic + bigDF$GenerationinMWhCountryB_Wind + bigDF$GenerationinMWhCountryB_Biomass + 
+  bigDF$GenerationinMWhCountryB_HydroPower + bigDF$GenerationinMWhCountryB_Biogas + bigDF$GenerationinMWhCountryB_WindOffshore 
 
-totalGenerationB  <-bigDF$GenerationTypesPerTechnology_IGCC + 
-  bigDF$GenerationTypesPerTechnology_Photovoltaic + bigDF$GenerationTypesPerTechnology_Wind + bigDF$GenerationTypesPerTechnology_CcgtCCS + 
-  bigDF$GenerationTypesPerTechnology_CoalPscCSS + bigDF$GenerationTypesPerTechnology_Lignite + bigDF$GenerationTypesPerTechnology_Biomass + 
-  bigDF$GenerationTypesPerTechnology_HydroPower + bigDF$GenerationTypesPerTechnology_IgccCCS + bigDF$GenerationTypesPerTechnology_CoalPSC + 
-  bigDF$GenerationTypesPerTechnology_Biogas + bigDF$GenerationTypesPerTechnology_CCGT + bigDF$GenerationTypesPerTechnology_WindOffshore + 
-  bigDF$GenerationTypesPerTechnology_Nuclear + bigDF$GenerationTypesPerTechnology_OCGT
+totalGenerationB  <-bigDF$GenerationinMWhCountryB_IGCC + 
+  bigDF$GenerationinMWhCountryB_Photovoltaic + bigDF$GenerationinMWhCountryB_Wind + bigDF$GenerationinMWhCountryB_CcgtCCS + 
+  bigDF$GenerationinMWhCountryB_CoalPscCSS + bigDF$GenerationinMWhCountryB_Lignite + bigDF$GenerationinMWhCountryB_Biomass + 
+  bigDF$GenerationinMWhCountryB_HydroPower + bigDF$GenerationinMWhCountryB_IgccCCS + bigDF$GenerationinMWhCountryB_CoalPSC + 
+  bigDF$GenerationinMWhCountryB_Biogas + bigDF$GenerationinMWhCountryB_CCGT + bigDF$GenerationinMWhCountryB_WindOffshore + 
+  bigDF$GenerationinMWhCountryB_Nuclear + bigDF$GenerationinMWhCountryB_OCGT
 
+renewableGenerationShareCountryA <-renewableGenerationA/totalGenerationA
 renewableGenerationShareCountryB <-renewableGenerationB/totalGenerationB
 
-GenerationShare <- renewableGenerationShareCountryA
-renewableGenerationShareCountryB
+RESEGenerationShareTableA <- renewableGenerationShareCountryA
+RESEGenerationShareTableB <- renewableGenerationShareCountryB
 
-write.table(GenerationShare , file = "GenerationShare.csv",row.names=FALSE, na="",col.names=FALSE, sep=",")
+GenerationShareTableA
+GenerationShareTableB
 
+write.table(RESEGenerationShareTableA, file = "RESEgenerationShareTableA.csv",row.names=FALSE, na="",col.names=FALSE, sep=",")
+write.table(RESEGenerationShareTableB, file = "RESEgenerationShareTableB.csv",row.names=FALSE, na="",col.names=FALSE, sep=",")
+
+write.table(renewableGenerationA, file = "renewableGenerationA.csv",row.names=FALSE, na="",col.names=FALSE, sep=",")
+write.table(renewableGenerationB, file = "renewableGenerationB.csv",row.names=FALSE, na="",col.names=FALSE, sep=",")
+
+write.table(totalGenerationA, file = "totalGenerationA.csv",row.names=FALSE, na="",col.names=FALSE, sep=",")
+write.table(totalGenerationB, file = "totalGenerationB.csv",row.names=FALSE, na="",col.names=FALSE, sep=",")
 
 
 #Relative Capacity Share of Renewables
@@ -136,8 +192,6 @@ totalCapacityA  <-bigDF$CapacityinMWinA_IGCC +
   bigDF$CapacityinMWinA_Biogas + bigDF$CapacityinMWinA_CCGT + bigDF$CapacityinMWinA_WindOffshore + 
   bigDF$CapacityinMWinA_Nuclear + bigDF$CapacityinMWinA_OCGT
 
-renewableCapacityShareCountryA <-renewableCapacityA/totalCapacityA
-
 renewableCapacityB <-  
   bigDF$CapacityinMWinB_Photovoltaic + bigDF$CapacityinMWinB_Wind + bigDF$CapacityinMWinB_Biomass + 
   bigDF$CapacityinMWinB_HydroPower + bigDF$CapacityinMWinB_Biogas + bigDF$CapacityinMWinB_WindOffshore 
@@ -149,10 +203,11 @@ totalCapacityB  <-bigDF$CapacityinMWinB_IGCC +
   bigDF$CapacityinMWinB_Biogas + bigDF$CapacityinMWinB_CCGT + bigDF$CapacityinMWinB_WindOffshore + 
   bigDF$CapacityinMWinB_Nuclear + bigDF$CapacityinMWinB_OCGT
 
+renewableCapacityShareCountryA <-renewableCapacityA/totalCapacityA
 renewableCapacityShareCountryB <-renewableCapacityB/totalCapacityB
 
-renewableCapacityShareCountryA
-renewableCapacityShareCountryB
+write.table(renewableCapacityShareCountryA, file = "renewableCapacityShareCountryA.csv",row.names=FALSE, na="",col.names=FALSE, sep=",")
+write.table(renewableCapacityShareCountryB, file = "renewableCapacityShareCountryB.csv",row.names=FALSE, na="",col.names=FALSE, sep=",")
 
 
 #supply ratio
@@ -164,11 +219,46 @@ renewableCapacityShareCountryB
 SupplyRatioA <- bigDF$TotalOperationalCapacityPerZoneInMW_Country_A/bigDF$PeakDemandPerZoneInMW_Country_A
 SupplyRatioB <- bigDF$TotalOperationalCapacityPerZoneInMW_Country_B/bigDF$PeakDemandPerZoneInMW_Country_B
 
+bigDF$TotalOperationalCapacityPerZoneInMW_Country_A
+bigDF$PeakDemandPerZoneInMW_Country_A
+
+write.table(SupplyRatioA, file = "SupplyRatioA.csv",row.names=FALSE, na="",col.names=FALSE, sep=",")
+write.table(SupplyRatioB, file = "SupplyRatioB.csv",row.names=FALSE, na="",col.names=FALSE, sep=",")
 SupplyRatioA
 SupplyRatioB
 
+SupplyRatioGenerationA <- bigDF$Total_DemandinMWh_Country_A/bigDF$NationalTotalProductioninMWh_Country_A
+SupplyRatioGenerationA <- bigDF$Total_DemandinMWh_Country_B/bigDF$NationalTotalProductioninMWh_Country_B
+
+SupplyRatioGenerationA
+SupplyRatioGenerationB
+
+write.table(SupplyRatioGenerationA, file = "SupplyRatioGenerationA.csv",row.names=FALSE, na="",col.names=FALSE, sep=",")
+write.table(SupplyRatioGenerationA, file = "SupplyRatioGenerationA.csv",row.names=FALSE, na="",col.names=FALSE, sep=",")
+
+# #CapacityMargin Check
+totalCapacityA <- bigDF$CapacityinMWinA_IGCC + 
+  bigDF$CapacityinMWinA_Photovoltaic + bigDF$CapacityinMWinA_Wind + bigDF$CapacityinMWinA_CcgtCCS + 
+  bigDF$CapacityinMWinA_CoalPscCSS + bigDF$CapacityinMWinA_Lignite + bigDF$CapacityinMWinA_Biomass + 
+  bigDF$CapacityinMWinA_HydroPower + bigDF$CapacityinMWinA_IgccCCS + bigDF$CapacityinMWinA_CoalPSC + 
+  bigDF$CapacityinMWinA_Biogas + bigDF$CapacityinMWinA_CCGT + bigDF$CapacityinMWinA_WindOffshore + 
+  bigDF$CapacityinMWinA_Nuclear + bigDF$CapacityinMWinA_OCGT
+totalCapacityA
+
+totalCapacityB <- bigDF$CapacityinMWinB_IGCC + 
+  bigDF$CapacityinMWinB_Photovoltaic + bigDF$CapacityinMWinB_Wind + bigDF$CapacityinMWinB_CcgtCCS + 
+  bigDF$CapacityinMWinB_CoalPscCSS + bigDF$CapacityinMWinB_Lignite + bigDF$CapacityinMWinB_Biomass + 
+  bigDF$CapacityinMWinB_HydroPower + bigDF$CapacityinMWinB_IgccCCS + bigDF$CapacityinMWinB_CoalPSC + 
+  bigDF$CapacityinMWinB_Biogas + bigDF$CapacityinMWinB_CCGT + bigDF$CapacityinMWinB_WindOffshore + 
+  bigDF$CapacityinMWinB_Nuclear + bigDF$CapacityinMWinB_OCGT
+totalCapacityB
 
 
+capacityMargingA <- (totalCapacityA/bigDF$PeakDemandPerZoneInMW_Country_A) - 1
+capacityMargingA 
+
+capacityMargingB <- (totalCapacityB/bigDF$PeakDemandPerZoneInMW_Country_B) - 1
+capacityMargingB
 
 # #TEST Writing Results onto a Data Table
 # DataTable <- c(capacityFractionPeakDemandA)
@@ -210,10 +300,7 @@ plot(demandCountryBplot)
 ggsave(filename = paste(filePrefix, "demand_B.png", sep=""))
 
 
-
-
-## plot stacked capacities !! Adjust legend labels if necessary !! ##
-## Generation mix
+# Capacity mix
 plotStackedCapacities <- function(df) {
   localEnv <- environment()
   technologyCapacities <- df[grepl( "CapacityinMWinA_" , names( df ))]
@@ -262,8 +349,57 @@ plotStackedCapacities <- function(df) {
          plot = stack, width=30, height=16.51, units="cm", scale=scaleFactor)}
 plotStackedCapacities(bigDF)
 
-# Tender subsidy costs per year: threshold is 150 MEuro per year
+# Generation Mix 
+plotStackedGeneration <- function(df) {
+  localEnv <- environment()
+  technologyGeneration <- df[grepl( "GenerationinMWhCountryA_" , names( df ))]
+  colnames(technologyGeneration)
+  moltenTechnologyGeneration <- melt(df, id.vars = "tick", measure.vars = colnames(technologyGeneration))
+  stack <- ggplot(moltenTechnologyGeneration, aes(x = moltenTechnologyGeneration$tick, y = moltenTechnologyGeneration$value, fill = moltenTechnologyGeneration$variable, order = moltenTechnologyGeneration$variable),
+                  environment = localEnv)+
+    geom_area(position="stack")+
+    guides(fill = guide_legend(reverse=TRUE, title = "Legend", ncol = 1, keywidth = .8, keyheight = .8))+
+    ggtitle("Generation mix The Netherlands")+
+    theme(plot.title = element_text(lineheight = 0.8, face = "bold", size = 11))+
+    scale_fill_discrete(name = "Legend",
+                        breaks = colnames(technologyGeneration),
+                        labels = substring(colnames(technologyGeneration), 17))+
+    scale_x_continuous(name = "Time (year)")+
+    scale_y_continuous(name = "Generation (MWh)")+
+    theme(axis.title.y = element_text(size = 9, angle = 90),
+          axis.title.x = element_text(size = 9, angle = 0),
+          legend.text = element_text(size = 8),
+          legend.title = element_text(size = 10))
+  ggsave(filename = paste(filePrefix, "stackedGenerationPlotNL.png", sep=""),
+         plot = stack, width=30, height=16.51, units="cm", scale=scaleFactor)}
+plotStackedGeneration(bigDF)
 
+plotStackedGeneration <- function(df) {
+  localEnv <- environment()
+  technologyGeneration <- df[grepl( "GenerationinMWhCountryB_" , names( df ))]
+  colnames(technologyGeneration)
+  moltenTechnologyGeneration <- melt(df, id.vars = "tick", measure.vars = colnames(technologyGeneration))
+  stack <- ggplot(moltenTechnologyGeneration, aes(x = moltenTechnologyGeneration$tick, y = moltenTechnologyGeneration$value, fill = moltenTechnologyGeneration$variable, order = moltenTechnologyGeneration$variable),
+                  environment = localEnv)+
+    geom_area(position="stack")+
+    guides(fill = guide_legend(reverse=TRUE, title = "Legend", ncol = 1, keywidth = .8, keyheight = .8))+
+    ggtitle("Generation mix Germany")+
+    theme(plot.title = element_text(lineheight = 0.8, face = "bold", size = 11))+
+    scale_fill_discrete(name = "Legend",
+                        breaks = colnames(technologyGeneration),
+                        labels = substring(colnames(technologyGeneration), 17))+
+    scale_x_continuous(name = "Time (year)")+
+    scale_y_continuous(name = "Generation (MWh)")+
+    theme(axis.title.y = element_text(size = 9, angle = 90),
+          axis.title.x = element_text(size = 9, angle = 0),
+          legend.text = element_text(size = 8),
+          legend.title = element_text(size = 10))
+  ggsave(filename = paste(filePrefix, "stackedGenerationPlotDE.png", sep=""),
+         plot = stack, width=30, height=16.51, units="cm", scale=scaleFactor)}
+plotStackedGeneration(bigDF)
+
+
+# Tender subsidy costs per year: threshold is 150 MEuro per year
 yearlyTenderSubsidyplotA = ggplot(data=bigDF, aes(x=tick, y=yearlyTotalTenderSubsidyCountryA_Tender_Subsidy_Yearly_Country_A, group=runNumber)) + 
   geom_line() + #(aes(colour = runNumber))
   xlab("Year") +  
@@ -280,6 +416,7 @@ yearlyTenderSubsidyplotB = ggplot(data=bigDF, aes(x=tick, y=yearlyTotalTenderSub
 plot(yearlyTenderSubsidyplotB)
 ggsave(filename = paste(filePrefix, "yearlyTenderSubsidyplotB.png", sep=""))
 
+#Producer Welfare
 #Producer Cash
 plotCashBalances <- function(df){
   localEnv <- environment()
@@ -360,7 +497,17 @@ plotProfitIncludingTenderSubsidy <- function(df){
 }
 plotProfitIncludingTenderSubsidy(bigDF)
 
+
 #Producer welfare = Producers costs - revenues = profit per producer over time, excluding Tender subsidy
+producerWelfareExcTenderA <- bigDF$ProfitProducersYearlyExcludingTenderSubsidy_ProfitProdA + bigDF$ProfitProducersYearlyExcludingTenderSubsidy_ProfitProdB + bigDF$ProfitProducersYearlyExcludingTenderSubsidy_ProfitProdC + bigDF$ProfitProducersYearlyExcludingTenderSubsidy_ProfitProdD
+producerWelfareExcTenderB <- bigDF$ProfitProducersYearlyExcludingTenderSubsidy_ProfitProdA + bigDF$ProfitProducersYearlyExcludingTenderSubsidy_ProfitProdB + bigDF$ProfitProducersYearlyExcludingTenderSubsidy_ProfitProdC + bigDF$ProfitProducersYearlyExcludingTenderSubsidy_ProfitProdD
+
+producerWelfareIncTenderA <- bigDF$ProfitProducersYearlyIncludingTenderSubsidy_ProfitProdA + bigDF$ProfitProducersYearlyIncludingTenderSubsidy_ProfitProdB + bigDF$ProfitProducersYearlyIncludingTenderSubsidy_ProfitProdC + bigDF$ProfitProducersYearlyIncludingTenderSubsidy_ProfitProdD
+producerWelfareIncTenderB <- bigDF$ProfitProducersYearlyIncludingTenderSubsidy_ProfitProdA + bigDF$ProfitProducersYearlyIncludingTenderSubsidy_ProfitProdB + bigDF$ProfitProducersYearlyIncludingTenderSubsidy_ProfitProdC + bigDF$ProfitProducersYearlyIncludingTenderSubsidy_ProfitProdD
+
+#Income Distribution
+# check different profits of producer whether the tender makes them really skewed or not
+# profits with and without subsidy
 plotProfitExcludingTenderSubsidy <- function(df){
   localEnv <- environment()
   profitA <- df$ProfitProducersYearlyExcludingTenderSubsidy_ProfitProdA
@@ -439,7 +586,7 @@ plotTenderSubsidy <- function(df){
 }
 plotTenderSubsidy(bigDF)
 
-# #Consumer Welfare = Difference in consumer expenditure at the beginning and end of simulation
+#Consumer Welfare = Difference in consumer expenditure at the beginning and end of simulation
 # s1 <- subset(bigDF, tick==1)
 # s2 <- subset(bigDF, tick==30)
 # changeConsumerExpenditureA <- (s2$ConsumerExpenditure_Country_A_electricity_spot_market/1000000 - s1$ConsumerExpenditure_Country_A_electricity_spot_market/1000000)
@@ -457,26 +604,26 @@ plotTenderSubsidy(bigDF)
 # pcchangeConsumerExpenditureB
 # meanPercentagechangeConsumerExpenditureB <- mean(pcchangeConsumerExpenditureB)
 # meanPercentagechangeConsumerExpenditureB
+
+# ConsumerExpenditureA = ggplot(data=bigDF, aes(x=tick, y=ConsumerExpenditureA, group=runNumber)) + #use myDataFrame for the data, columns for x and y
+#   geom_line(aes(colour = runNumber)) + #we want to use points, colored by runNumber
+#   xlab("Year") +  #specify x and y labels
+#   ylab("Expenditure (MEur)") + 
+#   ggtitle("Consumer expenditure - The Netherlands") #give the plot a title
+# plot(ConsumerExpenditureA)
+# ggsave(filename = paste(filePrefix, "ConsumerExpenditureA.png", sep=""))
 # 
-# # ConsumerExpenditureA = ggplot(data=bigDF, aes(x=tick, y=ConsumerExpenditureA, group=runNumber)) + #use myDataFrame for the data, columns for x and y
-# #   geom_line(aes(colour = runNumber)) + #we want to use points, colored by runNumber
-# #   xlab("Year") +  #specify x and y labels
-# #   ylab("Expenditure (MEur)") + 
-# #   ggtitle("Consumer expenditure - The Netherlands") #give the plot a title
-# # plot(ConsumerExpenditureA)
-# # ggsave(filename = paste(filePrefix, "ConsumerExpenditureA.png", sep=""))
-# # 
-# # 
-# # ConsumerExpenditureB = ggplot(data=bigDF, aes(x=tick, y=ConsumerExpenditure_Country_B_electricity_spot_market, group=runNumber)) + #use myDataFrame for the data, columns for x and y
-# #   geom_line(aes(colour = runNumber)) + #we want to use points, colored by runNumber
-# #   xlab("Year") +  #specify x and y labels
-# #   ylab("Expenditure (Eur)") + 
-# #   ggtitle("Consumer expenditure - Germany") #give the plot a title
-# # plot(ConsumerExpenditureB)
-# # ggsave(ConsumerExpenditureB,  file="ConsumerExpenditureB.png")
-# # 
-# # meanConsA <- mean(ConsumerExpenditureAinMillions)
-# # meanConsB <- mean(ConsumerExpenditureBinMillions)
+# 
+# ConsumerExpenditureB = ggplot(data=bigDF, aes(x=tick, y=ConsumerExpenditure_Country_B_electricity_spot_market, group=runNumber)) + #use myDataFrame for the data, columns for x and y
+#   geom_line(aes(colour = runNumber)) + #we want to use points, colored by runNumber
+#   xlab("Year") +  #specify x and y labels
+#   ylab("Expenditure (Eur)") + 
+#   ggtitle("Consumer expenditure - Germany") #give the plot a title
+# plot(ConsumerExpenditureB)
+# ggsave(ConsumerExpenditureB,  file="ConsumerExpenditureB.png")
+# 
+# meanConsA <- mean(ConsumerExpenditureAinMillions)
+# meanConsB <- mean(ConsumerExpenditureBinMillions)
 # differenceInChangeOfConsumerExpenditureAB = changeConsumerExpenditureA - changeConsumerExpenditureB
 # differenceInChangeOfConsumerExpenditureAB
 # # meanDiff <- mean(diff)
@@ -488,8 +635,8 @@ plotTenderSubsidy(bigDF)
 # rownames(DataTable) <- c("Change_Consumer_Expenditure_NL (MEuro)","Change_Consumer_Expenditure_DE (MEuro)", "Diff_NL-DE (MEuro)")
 # write.csv(DataTable, "DataTableConsumerExpenditure.csv")
 # read.csv("DataTableConsumerExpenditure.csv")
-# 
-# 
+
+
 
 
 
@@ -499,46 +646,6 @@ plotTenderSubsidy(bigDF)
 # market value = Volume PV per segment * Sgement Clearing Price / generation in MWh in tick
 # system base price = Average electricity price in tick
 # value factor = market value / system base price
-
-#Income Distribution
-# check different profits of producer whether the tender makes them really skewed or not
-# profits with and without subsidy
-
-
-
-#Congestion: does it take place?
-# maybe not really important, but could help in the analysis
-
-# 
-# #CapacityMargin Check
-# totalCapacityA <- bigDF$CapacityinMWinA_IGCC + 
-#   bigDF$CapacityinMWinA_Photovoltaic + bigDF$CapacityinMWinA_Wind + bigDF$CapacityinMWinA_CcgtCCS + 
-#   bigDF$CapacityinMWinA_CoalPscCSS + bigDF$CapacityinMWinA_Lignite + bigDF$CapacityinMWinA_Biomass + 
-#   bigDF$CapacityinMWinA_HydroPower + bigDF$CapacityinMWinA_IgccCCS + bigDF$CapacityinMWinA_CoalPSC + 
-#   bigDF$CapacityinMWinA_Biogas + bigDF$CapacityinMWinA_CCGT + bigDF$CapacityinMWinA_WindOffshore + 
-#   bigDF$CapacityinMWinA_Nuclear + bigDF$CapacityinMWinA_OCGT
-# totalCapacityA
-# 
-# totalCapacityB <- bigDF$CapacityinMWinB_IGCC + 
-#   bigDF$CapacityinMWinB_Photovoltaic + bigDF$CapacityinMWinB_Wind + bigDF$CapacityinMWinB_CcgtCCS + 
-#   bigDF$CapacityinMWinB_CoalPscCSS + bigDF$CapacityinMWinB_Lignite + bigDF$CapacityinMWinB_Biomass + 
-#   bigDF$CapacityinMWinB_HydroPower + bigDF$CapacityinMWinB_IgccCCS + bigDF$CapacityinMWinB_CoalPSC + 
-#   bigDF$CapacityinMWinB_Biogas + bigDF$CapacityinMWinB_CCGT + bigDF$CapacityinMWinB_WindOffshore + 
-#   bigDF$CapacityinMWinB_Nuclear + bigDF$CapacityinMWinB_OCGT
-# totalCapacityB
-# 
-# 
-# capacityMargingA <- (totalCapacityA/bigDF$PeakDemandPerZoneInMW_Country_A) - 1
-# capacityMargingA 
-# 
-# capacityMargingB <- (totalCapacityB/bigDF$PeakDemandPerZoneInMW_Country_B) - 1
-# capacityMargingB
-
-
-
-
-
-
 
 # #TEST mean of GenerationinMWh_Biomass
 # GenerationinMWhBiomassMean = 0
@@ -586,44 +693,43 @@ plotTenderSubsidy(bigDF)
 # write.csv(DataTable, "DataTableBaseCase.csv")
 # save()
 
-
-#Multiplot function
-multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
-  require(grid)
-  
-  # Make a list from the ... arguments and plotlist
-  plots <- c(list(...), plotlist)
-  
-  numPlots = length(plots)
-  
-  # If layout is NULL, then use 'cols' to determine layout
-  if (is.null(layout)) {
-    # Make the panel
-    # ncol: Number of columns of plots
-    # nrow: Number of rows needed, calculated from # of cols
-    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
-                     ncol = cols, nrow = ceiling(numPlots/cols))
-  }
-  
-  if (numPlots==1) {
-    print(plots[[1]])
-    
-  } else {
-    # Set up the page
-    grid.newpage()
-    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
-    
-    # Make each plot, in the correct location
-    for (i in 1:numPlots) {
-      # Get the i,j matrix positions of the regions that contain this subplot
-      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
-      
-      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
-                                      layout.pos.col = matchidx$col))
-    }
-  }
-}
-
+# #Multiplot function
+# multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
+#   require(grid)
+#   
+#   # Make a list from the ... arguments and plotlist
+#   plots <- c(list(...), plotlist)
+#   
+#   numPlots = length(plots)
+#   
+#   # If layout is NULL, then use 'cols' to determine layout
+#   if (is.null(layout)) {
+#     # Make the panel
+#     # ncol: Number of columns of plots
+#     # nrow: Number of rows needed, calculated from # of cols
+#     layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+#                      ncol = cols, nrow = ceiling(numPlots/cols))
+#   }
+#   
+#   if (numPlots==1) {
+#     print(plots[[1]])
+#     
+#   } else {
+#     # Set up the page
+#     grid.newpage()
+#     pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+#     
+#     # Make each plot, in the correct location
+#     for (i in 1:numPlots) {
+#       # Get the i,j matrix positions of the regions that contain this subplot
+#       matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+#       
+#       print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+#                                       layout.pos.col = matchidx$col))
+#     }
+#   }
+# }
+# 
 # pSA_1 = 
 #   ggplot(data=bigDF, aes(x=tick, y=bigDF$PriceInEURperMWh_Segment_Country_A_1, group=runNumber)) + 
 #   geom_line() + (aes(colour = runNumber)) +
@@ -951,3 +1057,4 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
 # 
 # segmentPricesB <-multiplot(pSB_1, pSB_2, pSB_3, pSB_4, pSB_5, pSB_6, pSB_7, pSB_8, pSB_9, pSB_10, pSB_11, pSB_12, pSB_13, pSB_14, pSB_15, pSB_16, pSB_17, pSB_18, pSB_19, pSB_20, cols=5)
 # #ggsave(filename = paste(filePrefix, "segmentPricesB.png", sep=""), plot=segmentPricesA,width=30, height=16.51, units="cm", scale=1)
+

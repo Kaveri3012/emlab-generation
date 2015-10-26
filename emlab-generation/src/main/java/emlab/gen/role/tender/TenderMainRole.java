@@ -64,8 +64,12 @@ public class TenderMainRole extends AbstractRole<RenewableSupportSchemeTender>
         Regulator regulator = scheme.getRegulator();
         ElectricitySpotMarket market = reps.marketRepository.findElectricitySpotMarketForZone(regulator.getZone());
 
-        for (EnergyProducer producer : reps.energyProducerRepository.findEnergyProducersByMarketAtRandom(market)) {
-            submitTenderBidRole.act(producer);
+        double tenderTarget = regulator.getAnnualRenewableTargetInMwh();
+        if (tenderTarget > 0) {
+
+            for (EnergyProducer producer : reps.energyProducerRepository.findEnergyProducersByMarketAtRandom(market)) {
+                submitTenderBidRole.act(producer);
+            }
         }
 
         clearRenewableTenderRole.act(regulator);
