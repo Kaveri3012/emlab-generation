@@ -16,7 +16,7 @@
 
 	<!-- Decarbonization Model -->
 	<bean id="decarbonizationModel" class="emlab.gen.domain.agent.DecarbonizationModel"
-		p:name="Decarbonization Model" p:simulationLength="20"
+		p:name="Decarbonization Model" p:simulationLength="40"
 		p:co2TradingImplemented="false" p:realRenewableDataImplemented="true"
 		p:iterationSpeedFactor="3" p:iterationSpeedCriterion="0.005"
 		p:capDeviationCriterion="0.03"
@@ -1212,7 +1212,7 @@
 		</property>
 		<property name="nodes">
 			<set>
-				<ref bean="nlNode" />
+				<ref bean="nlNode1" />
 			</set>
 		</property>
 		<property name="market" ref="NetherlandsElectricitySpotMarket" />
@@ -1294,7 +1294,7 @@
 		</property>
 		<property name="nodes">
 			<set>
-				<ref bean="deNode" />
+				<ref bean="deNode1" />
 			</set>
 		</property>
 		<property name="market" ref="GermanyElectricitySpotMarket" />

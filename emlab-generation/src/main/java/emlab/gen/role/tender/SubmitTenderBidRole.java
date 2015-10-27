@@ -450,27 +450,10 @@ public class SubmitTenderBidRole extends AbstractEnergyProducerRole<EnergyProduc
                                             + (plant.calculateActualLeadtime() + plant.calculateActualPermittime()) + tenderSchemeDuration),
                                     bidPricePerMWh, technology, getCurrentTick(), Bid.SUBMITTED, scheme);
 
-                            // logger.warn("totalAnnualExpectedGenerationOfPlant; "
-                            // + totalAnnualExpectedGenerationOfPlant
-                            // + " ; of plant; "
-                            // + plant
-                            // + " ;from producer; "
-                            // + agent
-                            // + " ;in zone; "
-                            // + zone
-                            // + " ;start time; "
-                            // + (getCurrentTick() +
-                            // (plant.calculateActualLeadtime() + plant
-                            // .calculateActualPermittime()))
-                            // + " ;end time; "
-                            // + (getCurrentTick()
-                            // + (plant.calculateActualLeadtime() +
-                            // plant.calculateActualPermittime()) +
-                            // tenderSchemeDuration)
-                            // + " ;and bid price; " + bidPricePerMWh +
-                            // " ;with technology; " + technology
-                            // + " ;current time; " + getCurrentTick() +
-                            // " ;of Scheme; " + scheme);
+                            logger.warn("SubmitBid 454 - Agent " + agent + " at tick " + getCurrentTick() + " in tech "
+                                    + technology + " with plant name " + plant.getName() + " with bidprice "
+                                    + bidPricePerMWh + " with generation " + totalAnnualExpectedGenerationOfPlant
+                                    + "in zone " + zone);
 
                         } // end for loop for tender bids
 

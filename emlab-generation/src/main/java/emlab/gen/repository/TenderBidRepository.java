@@ -34,13 +34,20 @@ public interface TenderBidRepository extends GraphRepository<TenderBid> {
     @Query(value = "g.v(zone).out('ZONE').filter{it.time == tick}.sort{it.price}._()", type = QueryType.Gremlin)
     public Iterable<TenderBid> findAllSortedTenderBidsbyTime(@Param("tick") long time, @Param("zone") Zone zone);
 
-    // this returns the accepted tender bids Scheme --with regulator-->
-    // Regulator --of zone--> Zone
+    // This returns the (partly) accepted bids for the current tick, needed to
+    // create the corresponding power plant
     @Query(value = "g.v(scheme).in('TENDERBID_SUPPORTSCHEME')"
-            + ".propertyFilter('start', FilterPipe.Filter.LESS_THAN_EQUAL, time)"
-            + ".propertyFilter('finish', FilterPipe.Filter.GREATER_THAN, time)"
+            + ".propertyFilter('time', FilterPipe.Filter.EQUAL, tick)"
+            + ".propertyFilter('status', FilterPipe.Filter.GREATER_THAN_EQUAL, 2)", type = QueryType.Gremlin)
+    public Iterable<TenderBid> findAllAcceptedTenderBidsByTime(
+            @Param("scheme") RenewableSupportSchemeTender renewableSupportSchemeTender, @Param("tick") long time);
+
+    // this returns the accepted tender bids Scheme that needs to be paid out
+    @Query(value = "g.v(scheme).in('TENDERBID_SUPPORTSCHEME')"
+            + ".propertyFilter('start', FilterPipe.Filter.LESS_THAN_EQUAL, tick)"
+            + ".propertyFilter('finish', FilterPipe.Filter.GREATER_THAN, tick)"
             + ".propertyFilter('status', FilterPipe.Filter.GREATER_THAN_EQUAL, 2)", type = QueryType.Gremlin)
     public Iterable<TenderBid> findAllTenderBidsThatShouldBePaidInTimeStep(
-            @Param("scheme") RenewableSupportSchemeTender renewableSupportSchemeTender, @Param("time") long time);
+            @Param("scheme") RenewableSupportSchemeTender renewableSupportSchemeTender, @Param("tick") long time);
 
 }

@@ -22,18 +22,12 @@ import org.springframework.transaction.annotation.Transactional;
 import agentspring.role.AbstractRole;
 import agentspring.role.Role;
 import agentspring.role.RoleComponent;
-import emlab.gen.domain.agent.BigBank;
-import emlab.gen.domain.agent.EnergyProducer;
-import emlab.gen.domain.agent.PowerPlantManufacturer;
 import emlab.gen.domain.agent.Regulator;
-import emlab.gen.domain.contract.CashFlow;
-import emlab.gen.domain.contract.Loan;
 import emlab.gen.domain.gis.Zone;
 import emlab.gen.domain.market.Bid;
 import emlab.gen.domain.policy.renewablesupport.RenewableSupportSchemeTender;
 import emlab.gen.domain.policy.renewablesupport.TenderBid;
 import emlab.gen.domain.policy.renewablesupport.TenderClearingPoint;
-import emlab.gen.domain.technology.PowerPlant;
 import emlab.gen.repository.Reps;
 
 /**
@@ -137,38 +131,6 @@ public class ClearRenewableTenderRole extends AbstractRole<Regulator> implements
 
             currentTenderBid.persist();
 
-            // A power plant can be created if the bid is (partly) accepted
-
-            if (currentTenderBid.getStatus() == Bid.ACCEPTED || currentTenderBid.getStatus() == Bid.PARTLY_ACCEPTED) {
-
-                PowerPlant plant = new PowerPlant();
-                EnergyProducer bidder = (EnergyProducer) currentTenderBid.getBidder();
-
-                plant.specifyAndPersist(currentTenderBid.getStart(), bidder, currentTenderBid.getPowerGridNode(),
-                        currentTenderBid.getTechnology());
-                PowerPlantManufacturer manufacturer = reps.genericRepository.findFirst(PowerPlantManufacturer.class);
-                BigBank bigbank = reps.genericRepository.findFirst(BigBank.class);
-
-                double investmentCostPayedByEquity = plant.getActualInvestedCapital()
-                        * (1 - bidder.getDebtRatioOfInvestments());
-                double investmentCostPayedByDebt = plant.getActualInvestedCapital()
-                        * bidder.getDebtRatioOfInvestments();
-                double downPayment = investmentCostPayedByEquity;
-                createSpreadOutDownPayments(bidder, manufacturer, downPayment, plant);
-
-                double amount = determineLoanAnnuities(investmentCostPayedByDebt, plant.getTechnology()
-                        .getDepreciationTime(), bidder.getLoanInterestRate());
-                // logger.warn("Loan amount is: " + amount);
-                Loan loan = reps.loanRepository.createLoan(currentTenderBid.getBidder(), bigbank, amount, plant
-                        .getTechnology().getDepreciationTime(), getCurrentTick(), plant);
-                // Create the loan
-                plant.createOrUpdateLoan(loan);
-
-                logger.warn("ClearingTender 148 - Agent " + bidder + " at tick " + getCurrentTick() + " in tech "
-                        + currentTenderBid.getTechnology() + " with plant " + plant + " in node "
-                        + currentTenderBid.getPowerGridNode() + " in zone " + currentTenderBid.getZone());
-
-            }
         } // FOR Loop ends here
 
         // This creates a clearing point that contains general information about
@@ -201,24 +163,6 @@ public class ClearRenewableTenderRole extends AbstractRole<Regulator> implements
 
         }
 
-    }
-
-    private void createSpreadOutDownPayments(EnergyProducer agent, PowerPlantManufacturer manufacturer,
-            double totalDownPayment, PowerPlant plant) {
-        int buildingTime = (int) plant.getActualLeadTime();
-        reps.nonTransactionalCreateRepository.createCashFlow(agent, manufacturer, totalDownPayment / buildingTime,
-                CashFlow.DOWNPAYMENT, getCurrentTick(), plant);
-        Loan downpayment = reps.loanRepository.createLoan(agent, manufacturer, totalDownPayment / buildingTime,
-                buildingTime - 1, getCurrentTick(), plant);
-        plant.createOrUpdateDownPayment(downpayment);
-    }
-
-    public double determineLoanAnnuities(double totalLoan, double payBackTime, double interestRate) {
-
-        double q = 1 + interestRate;
-        double annuity = totalLoan * (Math.pow(q, payBackTime) * (q - 1)) / (Math.pow(q, payBackTime) - 1);
-
-        return annuity;
     }
 
 }
