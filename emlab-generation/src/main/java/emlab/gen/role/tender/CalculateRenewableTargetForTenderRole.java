@@ -135,8 +135,8 @@ public class CalculateRenewableTargetForTenderRole extends AbstractRole<Renewabl
             renewableTargetInMwh = 0;
         }
 
-        // logger.warn("actualRenewableTargetInMwh; " + renewableTargetInMwh + "
-        // for year" + futureStartingTenderTimePoint
+        // logger.warn("actualRenewableTargetInMwh; " + renewableTargetInMwh +
+        // "for year" + futureStartingTenderTimePoint
         // + "for scheme " + scheme.getName());
         scheme.setAnnualRenewableTargetInMwh(renewableTargetInMwh);
 
@@ -187,6 +187,10 @@ public class CalculateRenewableTargetForTenderRole extends AbstractRole<Renewabl
                 technology, futureTimePoint)) {
             count++;
             double totalGenerationOfPlantInMwh = plant.getAnnualFullLoadHours() * plant.getActualNominalCapacity();
+            // logger.warn("Annual Full Load Hours" +
+            // plant.getAnnualFullLoadHours());
+            // logger.warn("getActualNominalCapacity" +
+            // plant.getActualNominalCapacity());
             long numberOfSegments = reps.segmentRepository.count();
             // for (Segment segment : reps.segmentRepository.findAll()) {
             // double availablePlantCapacity =
@@ -203,12 +207,14 @@ public class CalculateRenewableTargetForTenderRole extends AbstractRole<Renewabl
             // + expectedGenerationPerPlantAvailable);
             // }
             expectedGenerationPerTechnologyAvailable += totalGenerationOfPlantInMwh;
-
+            // logger.warn("total generation of plant" +
+            // totalGenerationOfPlantInMwh);
         }
         // logger.warn("No of power plants of technology " +
         // technology.getName() + "is " + count);
-        logger.warn("Expected generation from technology " + technology.getName() + "is "
-                + expectedGenerationPerTechnologyAvailable);
+        // logger.warn("Expected generation from technology " +
+        // technology.getName() + "is "
+        // + expectedGenerationPerTechnologyAvailable);
 
         return expectedGenerationPerTechnologyAvailable;
 

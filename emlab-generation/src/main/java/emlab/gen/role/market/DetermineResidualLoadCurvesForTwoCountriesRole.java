@@ -207,11 +207,6 @@ public class DetermineResidualLoadCurvesForTwoCountriesRole extends AbstractRole
                         DoubleMatrix1D hourlyProductionPerNode = new DenseDoubleMatrix1D(
                                 intermittentResourceProfile.getHourlyArray(getCurrentTick()));
 
-                        // WARNING!!!!!!! This is a very memory consuming
-                        // logger.warn....!!!!!!!
-                        // logger.warn("production profiles hourly data is " +
-                        // hourlyProductionPerNode);
-
                         m.viewColumn(TECHNOLOGYLOADFACTORSFORZONEANDNODE.get(zone).get(node).get(technology))
                                 .assign(hourlyProductionPerNode, Functions.plus);
                         hourlyProductionPerNode.assign(Functions.mult(intermittentCapacityOfTechnologyInNode));
@@ -605,12 +600,9 @@ public class DetermineResidualLoadCurvesForTwoCountriesRole extends AbstractRole
             String meanLoad = new String("Load in " + zone.getName() + ":");
             String segmentLength = new String("Segment length " + zone.getName() + ":");
             for (DynamicBin1D bin : segmentRloadBinsByZone.get(zone)) {
-                // logger.warn("Segment " + it + "\n Size: " + bin.size() +
-                // "\n Mean RLOAD~: " + Math.round(bin.mean())
-                // + "\n Max RLOAD~: " + Math.round(bin.max()) +
-                // "\n Min RLOAD~: " + Math.round(bin.min())
-                // + "\n Std RLOAD~: " +
-                // Math.round(bin.standardDeviation()));
+                logger.warn("Segment " + it + "\n Size: " + bin.size() + "\n Mean RLOAD~: " + Math.round(bin.mean())
+                        + "\n Max RLOAD~: " + Math.round(bin.max()) + "\n Min RLOAD~: " + Math.round(bin.min())
+                        + "\n Std RLOAD~: " + Math.round(bin.standardDeviation()));
                 it++;
                 double mean = bin.mean() * 1000;
                 mean = Math.round(mean);
@@ -644,6 +636,7 @@ public class DetermineResidualLoadCurvesForTwoCountriesRole extends AbstractRole
         String loadFactors;
         for (Zone zone : zoneList) {
             for (PowerGridNode node : zoneToNodeList.get(zone)) {
+                logger.warn("node-location" + node);
 
                 for (PowerGeneratingTechnology technology : technologyList) {
                     String loadFactorString = new String(technology.getName() + " LF in " + node.getName() + ":");
@@ -659,6 +652,8 @@ public class DetermineResidualLoadCurvesForTwoCountriesRole extends AbstractRole
                     }
                     ;
                     it = 1;
+                    // logger.warn("intTechnologyNodeLoadFactor" +
+                    // intTechnologyNodeLoadFactor.getLoadFactors());
                     for (DynamicBin1D bin : loadFactorBinMap.get(zone).get(node).get(technology)) {
                         // logger.warn("Segment " + it + "\n Size: " +
                         // bin.size() + "\n Mean RLOAD~: "

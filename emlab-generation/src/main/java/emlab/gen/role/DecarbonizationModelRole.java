@@ -408,7 +408,7 @@ public class DecarbonizationModelRole extends AbstractRole<DecarbonizationModel>
 
             for (RenewableSupportSchemeTender scheme : reps.renewableSupportSchemeTenderRepository.findAll()) {
                 tenderMainRolePartOne.act(scheme);
-
+                logger.warn(" Running tender scheme:" + scheme.getName());
                 timerMarket.stop();
                 logger.warn("        took: {} seconds.", timerMarket.seconds());
 
@@ -419,7 +419,7 @@ public class DecarbonizationModelRole extends AbstractRole<DecarbonizationModel>
         if (model.isFeedInPremiumImplemented() && getCurrentTick() > 0) {
             logger.warn(" 6a. Run Feed In Premium Scheme");
             for (RenewableSupportFipScheme scheme : reps.renewableSupportSchemeRepository.findAll()) {
-
+                logger.warn(" Running FIP scheme:" + scheme.getName());
                 if (scheme.isEmRevenuePaidExpost()) {
                     computePremiumRoleExPost.act(scheme);
                 } else {

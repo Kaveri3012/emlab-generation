@@ -97,6 +97,10 @@ public class PowerPlantEntryParser implements CSVEntryParser<PowerPlant> {
         if (data.length > 5 && !data[6].isEmpty()) {
             efficiency = Double.parseDouble(data[6]);
         }
+        int expectedEndOfLife = 0;
+        if (data.length > 6 && !data[7].isEmpty()) {
+            expectedEndOfLife = Integer.parseInt(data[7]);
+        }
 
         EnergyProducer energyProducer = null;
         if (!ownerName.isEmpty()) {
@@ -138,18 +142,19 @@ public class PowerPlantEntryParser implements CSVEntryParser<PowerPlant> {
             }
         }
         try {
-            return createPowerPlant(name, pgt, energyProducer, powerGridNode, age, capacity, efficiency);
+            return createPowerPlant(name, pgt, energyProducer, powerGridNode, age, capacity, efficiency,
+                    expectedEndOfLife);
         } catch (NullPointerException e) {
             logger.warn("ERROR: Name: \"" + name + "\",Pgt: " + pgt + ", EnergyProducer" + energyProducer + ", Node:"
-                    + powerGridNode
-                    + ", Age:" + age + ", Capacity: " + capacity + ", Efficiency:" + efficiency);
+                    + powerGridNode + ", Age:" + age + ", Capacity: " + capacity + ", Efficiency:" + efficiency
+                    + ", ExpectedEndOfLife" + expectedEndOfLife);
             throw e;
         }
     }
 
     private PowerPlant createPowerPlant(String name, PowerGeneratingTechnology technology,
-            EnergyProducer energyProducer,
-            PowerGridNode location, int age, double capacity, double efficiency) {
+            EnergyProducer energyProducer, PowerGridNode location, int age, double capacity, double efficiency,
+            int expectedEndOfLife) {
         PowerPlant plant = new PowerPlant().persist();
         plant.setName(name);
         plant.setTechnology(technology);
@@ -158,8 +163,13 @@ public class PowerPlantEntryParser implements CSVEntryParser<PowerPlant> {
         plant.setConstructionStartTime(-(technology.getExpectedLeadtime() + technology.getExpectedPermittime() + age));
         plant.setActualLeadtime(plant.getTechnology().getExpectedLeadtime());
         plant.setActualPermittime(plant.getTechnology().getExpectedPermittime());
-        plant.setExpectedEndOfLife(plant.getConstructionStartTime() + plant.getActualPermittime()
-                + plant.getActualLeadTime() + plant.getTechnology().getExpectedLifetime());
+        if (expectedEndOfLife > 0) {
+            plant.setExpectedEndOfLife(expectedEndOfLife);
+        } else {
+            plant.setExpectedEndOfLife(plant.getConstructionStartTime() + plant.getActualPermittime()
+                    + plant.getActualLeadTime() + plant.getTechnology().getExpectedLifetime());
+        }
+
         if (capacity == 0) {
             plant.setActualNominalCapacity(technology.getCapacity() * location.getCapacityMultiplicationFactor());
         } else {
@@ -180,8 +190,8 @@ public class PowerPlantEntryParser implements CSVEntryParser<PowerPlant> {
         loan.setFrom(energyProducer);
         loan.setTo(null);
         double amountPerPayment = determineLoanAnnuities(
-                plant.getActualInvestedCapital() * energyProducer.getDebtRatioOfInvestments(), plant.getTechnology()
-                .getDepreciationTime(), energyProducer.getLoanInterestRate());
+                plant.getActualInvestedCapital() * energyProducer.getDebtRatioOfInvestments(),
+                plant.getTechnology().getDepreciationTime(), energyProducer.getLoanInterestRate());
         loan.setAmountPerPayment(amountPerPayment);
         loan.setTotalNumberOfPayments(plant.getTechnology().getDepreciationTime());
         loan.setLoanStartTime(plant.getConstructionStartTime());

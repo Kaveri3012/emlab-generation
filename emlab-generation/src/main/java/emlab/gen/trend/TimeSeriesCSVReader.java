@@ -69,8 +69,9 @@ public class TimeSeriesCSVReader extends TimeSeriesImpl {
 
     @Transactional
     private void readVariableFromCSV() {
-       // logger.warn("Trying to read variable " + variableName + " from CSV file: " + filename + " with delimiter "
-         //       + delimiter);
+        // logger.warn("Trying to read variable " + variableName + " from CSV
+        // file: " + filename + " with delimiter "
+        // + delimiter);
 
         // Save the data in a long String
         try {

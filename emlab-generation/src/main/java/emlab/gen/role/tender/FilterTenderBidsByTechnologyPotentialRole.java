@@ -78,7 +78,8 @@ public class FilterTenderBidsByTechnologyPotentialRole extends AbstractRole<Rene
                             technology.getName())
                     .getValue(getCurrentTick() + scheme.getFutureTenderOperationStartTime());
 
-            logger.warn("verification: technology potential =" + technologyPotential);
+            // logger.warn("verification: technology potential =" +
+            // technologyPotential);
 
             expectedInstalledCapacityOfTechnologyInNode = reps.powerPlantRepository
                     .calculateCapacityOfExpectedOperationalPowerPlantsInMarketAndTechnology(market, technology,
@@ -92,10 +93,12 @@ public class FilterTenderBidsByTechnologyPotentialRole extends AbstractRole<Rene
 
             limit = technologyPotential
                     - (expectedInstalledCapacityOfTechnologyInNode * plant.getAnnualFullLoadHours());
-            logger.warn("verification: expected generation ="
-                    + expectedInstalledCapacityOfTechnologyInNode * plant.getAnnualFullLoadHours());
+                    // logger.warn("verification: expected generation ="
+                    // + expectedInstalledCapacityOfTechnologyInNode *
+                    // plant.getAnnualFullLoadHours());
 
-            logger.warn("Limit for technology " + technology.getName() + "is " + limit);
+            // logger.warn("Limit for technology " + technology.getName() + "is
+            // " + limit);
 
             double sumAcceptedBid = 0d;
             for (TenderBid currentBid : sortedTenderBidsbyPriceTechnology) {

@@ -250,6 +250,7 @@ public class PowerPlant {
 
             if (technology.isIntermittent()) {
                 factor = this.getIntermittentTechnologyNodeLoadFactor().getLoadFactorForSegment(segment);
+                // System.out.print("load factor for segment" + factor);
             } else {
                 double segmentID = segment.getSegmentID();
                 double min = technology.getPeakSegmentDependentAvailability();

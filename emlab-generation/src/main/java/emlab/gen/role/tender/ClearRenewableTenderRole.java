@@ -59,7 +59,8 @@ public class ClearRenewableTenderRole extends AbstractRole<RenewableSupportSchem
                 .findAllSubmittedSortedTenderBidsbyTime(getCurrentTick(), scheme);
 
         double tenderQuota = scheme.getAnnualRenewableTargetInMwh();
-        logger.warn("For scheme: " + scheme.getName() + " Tender Quota IN TENDER CLEARING; " + tenderQuota);
+        // logger.warn("For scheme: " + scheme.getName() + " Tender Quota IN
+        // TENDER CLEARING; " + tenderQuota);
         double sumOfTenderBidQuantityAccepted = 0d;
         double acceptedSubsidyPrice = 0d;
         boolean isTheTenderCleared = false;
@@ -99,7 +100,8 @@ public class ClearRenewableTenderRole extends AbstractRole<RenewableSupportSchem
 
                     sumOfTenderBidQuantityAccepted = sumOfTenderBidQuantityAccepted + currentTenderBid.getAmount();
 
-                    logger.warn("sumOfTenderBidQuantityAccepted; " + sumOfTenderBidQuantityAccepted);
+                    // logger.warn("sumOfTenderBidQuantityAccepted; " +
+                    // sumOfTenderBidQuantityAccepted);
 
                 }
 
@@ -108,9 +110,11 @@ public class ClearRenewableTenderRole extends AbstractRole<RenewableSupportSchem
                 else if (tenderQuota
                         - (sumOfTenderBidQuantityAccepted + currentTenderBid.getAmount()) < clearingEpsilon) {
 
-                    logger.warn("Partially Accepted: bidder; " + currentTenderBid.getBidder() + "Technology; "
-                            + currentTenderBid.getTechnology() + "bidAmount; " + currentTenderBid.getAmount()
-                            + "acceptedSubsidyPrice; " + acceptedSubsidyPrice);
+                    // logger.warn("Partially Accepted: bidder; " +
+                    // currentTenderBid.getBidder() + "Technology; "
+                    // + currentTenderBid.getTechnology() + "bidAmount; " +
+                    // currentTenderBid.getAmount()
+                    // + "acceptedSubsidyPrice; " + acceptedSubsidyPrice);
 
                     currentTenderBid.setStatus(Bid.FAILED);
                     currentTenderBid.setAcceptedAmount(0);
@@ -130,8 +134,9 @@ public class ClearRenewableTenderRole extends AbstractRole<RenewableSupportSchem
 
         } // FOR Loop ends here
 
-        logger.warn("Total No of Bids Accepted " + noOfBidsAccepted + "Accepted subsidy price " + acceptedSubsidyPrice
-                + "accepted subsidy quantity" + sumOfTenderBidQuantityAccepted);
+        // logger.warn("Total No of Bids Accepted " + noOfBidsAccepted +
+        // "Accepted subsidy price " + acceptedSubsidyPrice
+        // + "accepted subsidy quantity" + sumOfTenderBidQuantityAccepted);
         // This creates a clearing point that contains general information about
         // the cleared tender
         // volume, subsidy price, current tick, and stores it in the graph

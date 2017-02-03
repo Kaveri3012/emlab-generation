@@ -9,7 +9,7 @@ library(triangle)
 
 noOfTicks = 50 
 noOfRepetitions = 120 
-columnNames = as.character(seq.int(2011,2060)) 
+columnNames = as.character(seq.int(2014,2063)) 
 
 setwd("~/emlab-generation/emlab-generation/src/main/resources/data/stochasticDemandNLandDE")
 
@@ -34,8 +34,8 @@ write.csv(demandNL, file =paste('demandGrowthNL.csv'), quote = F, row.names = ro
 
 #For DE
 start = 1 
-top = 1.02
-max = 1.05
+top = 1.01
+max = 1.03
 min = 0.99
 noOfTicks = 50 
 rowNames = c()
