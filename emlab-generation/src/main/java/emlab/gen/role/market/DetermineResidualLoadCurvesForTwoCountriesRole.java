@@ -600,9 +600,11 @@ public class DetermineResidualLoadCurvesForTwoCountriesRole extends AbstractRole
             String meanLoad = new String("Load in " + zone.getName() + ":");
             String segmentLength = new String("Segment length " + zone.getName() + ":");
             for (DynamicBin1D bin : segmentRloadBinsByZone.get(zone)) {
-                logger.warn("Segment " + it + "\n Size: " + bin.size() + "\n Mean RLOAD~: " + Math.round(bin.mean())
-                        + "\n Max RLOAD~: " + Math.round(bin.max()) + "\n Min RLOAD~: " + Math.round(bin.min())
-                        + "\n Std RLOAD~: " + Math.round(bin.standardDeviation()));
+                // logger.warn("Segment " + it + "\n Size: " + bin.size() + "\n
+                // Mean RLOAD~: " + Math.round(bin.mean())
+                // + "\n Max RLOAD~: " + Math.round(bin.max()) + "\n Min RLOAD~:
+                // " + Math.round(bin.min())
+                // + "\n Std RLOAD~: " + Math.round(bin.standardDeviation()));
                 it++;
                 double mean = bin.mean() * 1000;
                 mean = Math.round(mean);
@@ -626,8 +628,8 @@ public class DetermineResidualLoadCurvesForTwoCountriesRole extends AbstractRole
                 meanLoad = meanLoad.concat("," + mean);
                 segmentLength = segmentLength.concat("," + bin.size());
             }
-            // logger.warn(meanRLoad);
-            // logger.warn(meanLoad);
+            logger.warn(meanRLoad);
+            logger.warn(meanLoad);
             // logger.warn(segmentLength);
         }
 
@@ -660,14 +662,22 @@ public class DetermineResidualLoadCurvesForTwoCountriesRole extends AbstractRole
                         // + bin.mean() + "\n Max RLOAD~: " + bin.max() +
                         // "\n Min RLOAD~: " + bin.min()
                         // + "\n Std RLOAD~: " + bin.standardDeviation());
-                        intTechnologyNodeLoadFactor.setLoadFactorForSegmentId(it, bin.mean());
+                        double techNodeLF;
+                        if (Double.isNaN(bin.mean())) {
+                            techNodeLF = 0;
+                            System.err.print("ERROR: technology Node LF is Not a Number");
+                        } else
+                            techNodeLF = bin.mean();
+
+                        intTechnologyNodeLoadFactor.setLoadFactorForSegmentId(it, techNodeLF);
+
                         double mean = bin.mean() * 1000000;
                         mean = Math.round(mean);
                         mean = mean / 1000000.0;
                         loadFactorString = loadFactorString.concat(" " + mean);
                         it++;
                     }
-                    // logger.warn(loadFactorString);
+                    logger.warn(loadFactorString);
                 }
 
             }
@@ -675,6 +685,7 @@ public class DetermineResidualLoadCurvesForTwoCountriesRole extends AbstractRole
 
         // 8. Store the segment duration and the average load in that segment
         // per country.
+        double tempCheck = 0d;
 
         Iterable<SegmentLoad> segmentLoads = reps.segmentLoadRepository.findAll();
         for (SegmentLoad segmentLoad : segmentLoads) {
@@ -682,15 +693,31 @@ public class DetermineResidualLoadCurvesForTwoCountriesRole extends AbstractRole
             Zone zone = segmentLoad.getElectricitySpotMarket().getZone();
             double demandGrowthFactor = reps.marketRepository.findElectricitySpotMarketForZone(zone)
                     .getDemandGrowthTrend().getValue(clearingTick);
-            segmentLoad.setBaseLoad(
-                    segmentLoadBinsByZone.get(zone)[segment.getSegmentID() - 1].mean() / demandGrowthFactor);
+            // tempCheck = [segment.getSegmentID() - 1].mean() /
+            // demandGrowthFactor;
+            // logger.warn("segment base load calculation"+ tempCheck );
+
+            tempCheck = segmentLoadBinsByZone.get(zone)[segment.getSegmentID() - 1].mean();
+            if (Double.isNaN(tempCheck)) {
+                System.err.print("ERROR: Segment Load Bin is Not a Number");
+                tempCheck = 0;
+            }
+            segmentLoad.setBaseLoad(tempCheck / demandGrowthFactor);
             // logger.warn("Segment " + segment.getSegmentID() + ": " +
             // segmentLoad.getBaseLoad() + "MW");
         }
 
         Iterable<Segment> segments = reps.segmentRepository.findAll();
+        double tempLenthInHours = 0;
         for (Segment segment : segments) {
-            segment.setLengthInHours(segmentRloadBins[segment.getSegmentID() - 1].size());
+            tempLenthInHours = segmentRloadBins[segment.getSegmentID() - 1].size();
+            if (Double.isNaN(tempLenthInHours)) {
+                segment.setLengthInHours(0);
+                System.err.print("ERROR: Segment Length is Not a Number");
+            } else {
+                segment.setLengthInHours(tempLenthInHours);
+            }
+
         }
 
         for (Zone zone : zoneList) {

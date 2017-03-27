@@ -76,16 +76,7 @@ public class TenderMainRolePart extends AbstractRole<RenewableSupportSchemeTende
         // submitTenderBidRoleExpostRevenuePayment.act(scheme);
         // } else {
         submitTenderBidRole.act(scheme);
-        // }
 
-        // this role needs to be adjusted for the techspec feature
-        // Regulator regulator = scheme.getRegulator();
-        // ElectricitySpotMarket market =
-        // reps.marketRepository.findElectricitySpotMarketForZone(regulator.getZone());
-        //
-        // for (EnergyProducer producer :
-        // reps.energyProducerRepository.findEnergyProducersByMarketAtRandom(market))
-        // {
         if (scheme.getAnnualRenewableTargetInMwh() > 0) {
             filterTenderBidsByTechnologyPotentialRole.act(scheme);
 

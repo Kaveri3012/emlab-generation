@@ -75,18 +75,19 @@ public class CalculateRenewableTargetForTenderRole extends AbstractRole<Renewabl
         for (SegmentLoad segmentLoad : market.getLoadDurationCurve()) {
             totalExpectedConsumption += segmentLoad.getBaseLoad() * demandFactor
                     * segmentLoad.getSegment().getLengthInHours();
+            // logger.warn("base load" + segmentLoad.getBaseLoad());
+            // logger.warn("demand factor" + demandFactor);
 
         }
 
         scheme.setAnnualExpectedConsumption(totalExpectedConsumption);
-        // logger.warn("totalExpectedConsumption; " + totalExpectedConsumption);
+        logger.warn("totalExpectedConsumption; " + totalExpectedConsumption);
 
         // renewable target for tender operation start year in MWh is
 
         double renewableTargetInMwh = targetFactor * totalExpectedConsumption;
-        // logger.warn("Policy based (total ) renewableTargetInMwh; " +
-        // renewableTargetInMwh + "for scheme "
-        // + scheme.getName());
+        logger.warn("Policy based (absolute ) renewableTargetInMwh; " + renewableTargetInMwh + "for scheme "
+                + scheme.getName());
 
         // calculate expected generation, and subtract that from annual
         // target.
@@ -111,8 +112,7 @@ public class CalculateRenewableTargetForTenderRole extends AbstractRole<Renewabl
             totalExpectedGenerationAvailable += expectedGenerationPerTechnologyAvailable;
         }
 
-        // logger.warn("Calc target role: totalExpectedRenGeneration; " +
-        // totalExpectedGenerationAvailable);
+        logger.warn("Calc target role: totalExpectedRenGeneration; " + totalExpectedGenerationAvailable);
 
         scheme.setYearlyTenderDemandTarget(renewableTargetInMwh); // Tender
                                                                   // target
@@ -135,9 +135,8 @@ public class CalculateRenewableTargetForTenderRole extends AbstractRole<Renewabl
             renewableTargetInMwh = 0;
         }
 
-        // logger.warn("actualRenewableTargetInMwh; " + renewableTargetInMwh +
-        // "for year" + futureStartingTenderTimePoint
-        // + "for scheme " + scheme.getName());
+        logger.warn("actualRenewableTargetInMwh; " + renewableTargetInMwh + "for year" + futureStartingTenderTimePoint
+                + "for scheme " + scheme.getName());
         scheme.setAnnualRenewableTargetInMwh(renewableTargetInMwh);
 
     }
@@ -207,14 +206,12 @@ public class CalculateRenewableTargetForTenderRole extends AbstractRole<Renewabl
             // + expectedGenerationPerPlantAvailable);
             // }
             expectedGenerationPerTechnologyAvailable += totalGenerationOfPlantInMwh;
-            // logger.warn("total generation of plant" +
-            // totalGenerationOfPlantInMwh);
+            logger.warn("total generation of plant" + totalGenerationOfPlantInMwh);
         }
         // logger.warn("No of power plants of technology " +
         // technology.getName() + "is " + count);
-        // logger.warn("Expected generation from technology " +
-        // technology.getName() + "is "
-        // + expectedGenerationPerTechnologyAvailable);
+        logger.warn("Expected generation from technology " + technology.getName() + "is "
+                + expectedGenerationPerTechnologyAvailable);
 
         return expectedGenerationPerTechnologyAvailable;
 
