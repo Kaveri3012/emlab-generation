@@ -416,30 +416,6 @@ public class DecarbonizationModelRole extends AbstractRole<DecarbonizationModel>
 
         }
 
-        if (model.isFeedInPremiumImplemented() && getCurrentTick() > 0) {
-            logger.warn(" 6a. Run Feed In Premium Scheme");
-            for (RenewableSupportFipScheme scheme : reps.renewableSupportSchemeRepository.findAll()) {
-                logger.warn(" Running FIP scheme:" + scheme.getName());
-                if (scheme.isEmRevenuePaidExpost()) {
-                    computePremiumRoleExPost.act(scheme);
-                } else {
-                    computePremiumRoleExAnte.act(scheme);
-                }
-                feedInPremiumRole.act(scheme);
-            }
-            timerMarket.stop();
-            logger.warn("        took: {} seconds.", timerMarket.seconds());
-        }
-
-        logger.warn("  6.b) Creating power plant financial reports.");
-        Timer financialReports = new Timer();
-        financialReports.start();
-
-        creatingFinancialReports.act(model);
-
-        financialReports.stop();
-        logger.warn("        took: {} seconds.", financialReports.seconds());
-
         /*
          * RENEWABLE TENDER
          */
@@ -513,6 +489,30 @@ public class DecarbonizationModelRole extends AbstractRole<DecarbonizationModel>
         // }
         timerInvest.stop();
         logger.warn("        took: {} seconds.", timerInvest.seconds());
+
+        if (model.isFeedInPremiumImplemented() && getCurrentTick() > 0) {
+            logger.warn(" 6a. Run Feed In Premium Scheme");
+            for (RenewableSupportFipScheme scheme : reps.renewableSupportSchemeRepository.findAll()) {
+                logger.warn(" Running FIP scheme:" + scheme.getName());
+                if (scheme.isEmRevenuePaidExpost()) {
+                    computePremiumRoleExPost.act(scheme);
+                } else {
+                    computePremiumRoleExAnte.act(scheme);
+                }
+                feedInPremiumRole.act(scheme);
+            }
+            timerMarket.stop();
+            logger.warn("        took: {} seconds.", timerMarket.seconds());
+        }
+
+        logger.warn("  6.b) Creating power plant financial reports.");
+        Timer financialReports = new Timer();
+        financialReports.start();
+
+        creatingFinancialReports.act(model);
+
+        financialReports.stop();
+        logger.warn("        took: {} seconds.", financialReports.seconds());
 
         if (model.isLongTermContractsImplemented()) { // if (getCurrentTick() >=
             // model.getSimulationLength())

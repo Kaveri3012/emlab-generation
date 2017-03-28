@@ -107,7 +107,7 @@ public class ComputePremiumRoleExAnte extends AbstractEnergyProducerRole<EnergyP
         Regulator regulator = scheme.getRegulator();
 
         // should be close to the investor's future time point.
-        long futureTimePoint = scheme.getFutureSchemeStartTime() + getCurrentTick();
+        long futureTimePoint = scheme.getFutureSchemeStartTime() + getCurrentTick() + 1;
 
         ElectricitySpotMarket market = reps.marketRepository.findElectricitySpotMarketForZone(regulator.getZone());
 
