@@ -38,8 +38,7 @@ public class CalculateRenewableTargetForTenderRole extends AbstractRole<Renewabl
         double targetFactorAchievementForecast;
         Zone zone = scheme.getRegulator().getZone();
 
-        // logger.warn("Calculate Renewable Target Role started of zone: " +
-        // zone);
+        logger.warn("Calculate Renewable Target Role started of zone: " + zone);
 
         ElectricitySpotMarket market = reps.marketRepository.findElectricitySpotMarketForZone(zone);
 
@@ -60,10 +59,13 @@ public class CalculateRenewableTargetForTenderRole extends AbstractRole<Renewabl
             // targetFactorAchievementForecast =
             // getForecastedRenewableGeneration(scheme, technology);
         } else {
+            System.out.print("technology specificity is NOT enabled");
             targetFactor = reps.renewableTargetForTenderRepository
                     .findTechnologyNeutralRenewableTargetForTenderByRegulator(scheme.getRegulator())
                     .getYearlyRenewableTargetTimeSeries()
                     .getValue(getCurrentTick() + scheme.getFutureTenderOperationStartTime());
+
+            System.out.print("technology specificity is NOT enabled. target factor is" + targetFactor);
             // targetFactorAchievementForecast =
             // getForecastedRenewableGeneration(scheme, null);
 
@@ -112,7 +114,8 @@ public class CalculateRenewableTargetForTenderRole extends AbstractRole<Renewabl
             totalExpectedGenerationAvailable += expectedGenerationPerTechnologyAvailable;
         }
 
-        logger.warn("Calc target role: totalExpectedRenGeneration; " + totalExpectedGenerationAvailable);
+        // logger.warn("Calc target role: totalExpectedRenGeneration; " +
+        // totalExpectedGenerationAvailable);
 
         scheme.setYearlyTenderDemandTarget(renewableTargetInMwh); // Tender
                                                                   // target
@@ -206,12 +209,14 @@ public class CalculateRenewableTargetForTenderRole extends AbstractRole<Renewabl
             // + expectedGenerationPerPlantAvailable);
             // }
             expectedGenerationPerTechnologyAvailable += totalGenerationOfPlantInMwh;
-            logger.warn("total generation of plant" + totalGenerationOfPlantInMwh);
+            // logger.warn("total generation of plant" +
+            // totalGenerationOfPlantInMwh);
         }
         // logger.warn("No of power plants of technology " +
         // technology.getName() + "is " + count);
-        logger.warn("Expected generation from technology " + technology.getName() + "is "
-                + expectedGenerationPerTechnologyAvailable);
+        // logger.warn("Expected generation from technology " +
+        // technology.getName() + "is "
+        // + expectedGenerationPerTechnologyAvailable);
 
         return expectedGenerationPerTechnologyAvailable;
 

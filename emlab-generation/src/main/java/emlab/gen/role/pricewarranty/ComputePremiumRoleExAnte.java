@@ -326,9 +326,8 @@ public class ComputePremiumRoleExAnte extends AbstractEnergyProducerRole<EnergyP
                 fReport.setExpectedOpRevenueElectricityMarketWithSubsidy(0);
                 fReport.PersistReport();
 
-                // logger.warn("expectedBaseCost in fipRole for plant" + plant +
-                // "in tick" + futureTimePoint + "is "
-                // + fiPremium);
+                logger.warn("expectedBaseCost in fipRole for plant" + plant + "in tick" + futureTimePoint + "is "
+                        + fiPremium);
                 if (scheme.isTechnologySpecificityEnabled() == true) {
                     BaseCostFip baseCostFip = new BaseCostFip();
 
@@ -347,8 +346,7 @@ public class ComputePremiumRoleExAnte extends AbstractEnergyProducerRole<EnergyP
 
                     baseCostMap.put(new Key2D(technology, node), fiPremium);
 
-                    // logger.warn("Creating base cost map: technology " +
-                    // technology.getName() + "premium " + fiPremium);
+                    logger.warn("Creating base cost map: technology " + technology.getName() + "premium " + fiPremium);
 
                 }
 

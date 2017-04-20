@@ -399,38 +399,6 @@ public class DecarbonizationModelRole extends AbstractRole<DecarbonizationModel>
         timerMarket.stop();
         logger.warn("        took: {} seconds.", timerMarket.seconds());
 
-        if (model.isRenewableTenderSchemeImplemented() && getCurrentTick() > 0) {
-
-            logger.warn(" 6.a1 Running Renewable Tender Scheme");
-
-            timerMarket.reset();
-            timerMarket.start();
-
-            for (RenewableSupportSchemeTender scheme : reps.renewableSupportSchemeTenderRepository.findAll()) {
-                tenderMainRolePartOne.act(scheme);
-                logger.warn(" Running tender scheme:" + scheme.getName());
-                timerMarket.stop();
-                logger.warn("        took: {} seconds.", timerMarket.seconds());
-
-            }
-
-        }
-
-        if (model.isFeedInPremiumImplemented() && getCurrentTick() > 0) {
-            logger.warn(" 6a. Run Feed In Premium Scheme");
-            for (RenewableSupportFipScheme scheme : reps.renewableSupportSchemeRepository.findAll()) {
-                logger.warn(" Running FIP scheme:" + scheme.getName());
-                if (scheme.isEmRevenuePaidExpost()) {
-                    computePremiumRoleExPost.act(scheme);
-                } else {
-                    computePremiumRoleExAnte.act(scheme);
-                }
-                feedInPremiumRole.act(scheme);
-            }
-            timerMarket.stop();
-            logger.warn("        took: {} seconds.", timerMarket.seconds());
-        }
-
         logger.warn("  6.b) Creating power plant financial reports.");
         Timer financialReports = new Timer();
         financialReports.start();
@@ -514,6 +482,37 @@ public class DecarbonizationModelRole extends AbstractRole<DecarbonizationModel>
         timerInvest.stop();
         logger.warn("        took: {} seconds.", timerInvest.seconds());
 
+        if (model.isRenewableTenderSchemeImplemented() && getCurrentTick() > 0) {
+
+            logger.warn(" 6.a1 Running Renewable Tender Scheme");
+
+            timerMarket.reset();
+            timerMarket.start();
+
+            for (RenewableSupportSchemeTender scheme : reps.renewableSupportSchemeTenderRepository.findAll()) {
+                tenderMainRolePartOne.act(scheme);
+                logger.warn(" Running tender scheme:" + scheme.getName());
+                timerMarket.stop();
+                logger.warn("        took: {} seconds.", timerMarket.seconds());
+
+            }
+
+        }
+
+        if (model.isFeedInPremiumImplemented() && getCurrentTick() > 0) {
+            logger.warn(" 6a. Run Feed In Premium Scheme");
+            for (RenewableSupportFipScheme scheme : reps.renewableSupportSchemeRepository.findAll()) {
+                logger.warn(" Running FIP scheme:" + scheme.getName());
+                if (scheme.isEmRevenuePaidExpost()) {
+                    computePremiumRoleExPost.act(scheme);
+                } else {
+                    computePremiumRoleExAnte.act(scheme);
+                }
+                feedInPremiumRole.act(scheme);
+            }
+            timerMarket.stop();
+            logger.warn("        took: {} seconds.", timerMarket.seconds());
+        }
         if (model.isLongTermContractsImplemented()) { // if (getCurrentTick() >=
             // model.getSimulationLength())
             // {

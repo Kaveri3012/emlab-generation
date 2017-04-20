@@ -380,22 +380,17 @@ public class InvestInPowerGenerationTechnologiesStandard<T extends EnergyProduce
                         if ((scheme.getFutureSchemeStartTime() + getCurrentTick()) == futureTimePoint
                                 && scheme.isTechnologySpecificityEnabled()) {
                             baseCostFip = reps.baseCostFipRepository.findOneBaseCostForTechnologyAndNodeAndTime(
-                                    node.getName(), technology, futureTimePoint);
+                                    node.getName(), technology, futureTimePoint - 1);
                             expectedBaseCost = baseCostFip.getCostPerMWh();
-                            // logger.warn("For technology" +
-                            // technology.getName() + "for node" +
-                            // node.getName()
-                            // + "Expected Base cost " +
-                            // baseCostFip.getCostPerMWh());
+                            logger.warn("For technology" + technology.getName() + "for node" + node.getName()
+                                    + "Expected Base cost " + baseCostFip.getCostPerMWh());
                         } else if ((scheme.getFutureSchemeStartTime() + getCurrentTick()) == futureTimePoint
                                 && !scheme.isTechnologySpecificityEnabled()) {
                             baseCostFip = reps.baseCostFipRepository
-                                    .findOneTechnologyNeutralBaseCostForTime(futureTimePoint);
+                                    .findOneTechnologyNeutralBaseCostForTime(futureTimePoint - 1);
                             expectedBaseCost = baseCostFip.getCostPerMWh();
-                            // logger.warn("2: For technology" +
-                            // technology.getName() + "for node" +
-                            // node.getName()
-                            // + "Expected Base cost " + expectedBaseCost);
+                            logger.warn("2: For technology" + technology.getName() + "for node" + node.getName()
+                                    + "Expected Base cost " + expectedBaseCost);
 
                         } else {
 
@@ -559,7 +554,8 @@ public class InvestInPowerGenerationTechnologiesStandard<T extends EnergyProduce
                         fReport.setProjectValuePerMwWithoutSubsidy(projectValueOld / plant.getActualNominalCapacity());
 
                         if (scheme != null && expectedBaseCost > 0
-                                && (scheme.getPowerGeneratingTechnologiesEligible().contains(technology))) {
+                                && (scheme.getPowerGeneratingTechnologiesEligible().contains(technology))
+                                && (getCurrentTick() > 2)) {
 
                             // logger.warn("Inv Technology" +
                             // technology.getName() + ": Operating Cost" +
