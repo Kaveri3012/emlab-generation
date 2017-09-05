@@ -75,6 +75,7 @@ public class TenderMainRolePart extends AbstractRole<RenewableSupportSchemeTende
         // if (scheme.isExpostRevenueCalculation() == true) {
         // submitTenderBidRoleExpostRevenuePayment.act(scheme);
         // } else {
+
         submitTenderBidRole.act(scheme);
 
         if (scheme.getAnnualRenewableTargetInMwh() > 0) {

@@ -397,16 +397,6 @@ public class DecarbonizationModelRole extends AbstractRole<DecarbonizationModel>
             // market.act(processAcceptedBidsRole);
         }
         timerMarket.stop();
-        logger.warn("        took: {} seconds.", timerMarket.seconds());
-
-        logger.warn("  6.b) Creating power plant financial reports.");
-        Timer financialReports = new Timer();
-        financialReports.start();
-
-        creatingFinancialReports.act(model);
-
-        financialReports.stop();
-        logger.warn("        took: {} seconds.", financialReports.seconds());
 
         /*
          * RENEWABLE TENDER
@@ -484,7 +474,7 @@ public class DecarbonizationModelRole extends AbstractRole<DecarbonizationModel>
 
         if (model.isRenewableTenderSchemeImplemented() && getCurrentTick() > 0) {
 
-            logger.warn(" 6.a1 Running Renewable Tender Scheme");
+            logger.warn(" 8.a1 Running Renewable Tender Scheme");
 
             timerMarket.reset();
             timerMarket.start();
@@ -500,7 +490,7 @@ public class DecarbonizationModelRole extends AbstractRole<DecarbonizationModel>
         }
 
         if (model.isFeedInPremiumImplemented() && getCurrentTick() > 0) {
-            logger.warn(" 6a. Run Feed In Premium Scheme");
+            logger.warn(" 8.b Run Feed In Premium Scheme");
             for (RenewableSupportFipScheme scheme : reps.renewableSupportSchemeRepository.findAll()) {
                 logger.warn(" Running FIP scheme:" + scheme.getName());
                 if (scheme.isEmRevenuePaidExpost()) {
@@ -513,13 +503,14 @@ public class DecarbonizationModelRole extends AbstractRole<DecarbonizationModel>
             timerMarket.stop();
             logger.warn("        took: {} seconds.", timerMarket.seconds());
         }
+
         if (model.isLongTermContractsImplemented()) { // if (getCurrentTick() >=
             // model.getSimulationLength())
             // {
             // agentspring.simulation.Schedule.getSchedule().stop();
             // }
 
-            logger.warn("  7.5. Reassign LTCs");
+            logger.warn("  8.5. Reassign LTCs");
             timerMarket.reset();
             timerMarket.start();
             for (EnergyProducer producer : reps.genericRepository.findAllAtRandom(EnergyProducer.class)) {
@@ -537,7 +528,7 @@ public class DecarbonizationModelRole extends AbstractRole<DecarbonizationModel>
         if (model.isDeletionOldPPDPBidsAndCashFlowsEnabled() && (getCurrentTick() - model.getDeletionAge() >= 0)) {
             timerMarket.reset();
             timerMarket.start();
-            logger.warn("  8. Delete old nodes in year {}.", (getCurrentTick() - model.getDeletionAge()));
+            logger.warn("  9. Delete old nodes in year {}.", (getCurrentTick() - model.getDeletionAge()));
             // reps.bidRepository.delete(reps.bidRepository.findAllBidsForForTime(getCurrentTick()
             // - model.getDeletionAge()));
             reps.cashFlowRepository.delete(
@@ -555,6 +546,18 @@ public class DecarbonizationModelRole extends AbstractRole<DecarbonizationModel>
 
         timer.stop();
         logger.warn("Tick {} took {} seconds.", getCurrentTick(), timer.seconds());
+
+        logger.warn("        took: {} seconds.", timerMarket.seconds());
+
+        logger.warn("  10 Creating power plant financial reports.");
+        Timer financialReports = new Timer();
+        financialReports.start();
+
+        creatingFinancialReports.act(model);
+
+        financialReports.stop();
+        logger.warn("        took: {} seconds.", financialReports.seconds());
+
     }
 
     @Transactional

@@ -1,9 +1,9 @@
 library(ggplot2)
 library(plyr)
-library(reshape)
+library(reshape2)
 library(grid)
 library(ggthemes)
-source("AgentSpringHeadlessReader.R")
+#source("AgentSpringHeadlessReader.R")
 source("TimeSeriesSummariser.R")
 
 technologyPalette=c("CoalPSC" = "black", "Biomass" = "darkgreen", "Biogas"="darkolivegreen3", "Nuclear" = "purple", "Lignite" = "saddlebrown",
